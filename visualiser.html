@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Floor visualiser — Swayam Enterprises</title>
+<meta name="description" content="Upload a photo of your floor, pick a finish, and see how it would look. Then send it to us for a quote.">
+<meta name="theme-color" content="#0B2A66">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230B2A66'/%3E%3Cpath d='M347 158C347 108 165 108 165 180c0 56 182 56 182 120 0 72-182 72-182 20' fill='none' stroke='%23fff' stroke-width='46' stroke-linecap='round' transform='translate(22,83) scale(0.72)'/%3E%3Cg fill='%23F5B21B'%3E%3Crect x='260' y='177' width='33' height='158'/%3E%3Crect x='260' y='177' width='128' height='33'/%3E%3Crect x='260' y='240' width='104' height='33'/%3E%3Crect x='260' y='302' width='128' height='33'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0B2A66;--navy-dp:#061A45;--gold:#F5B21B;--wash:#F4F6FA;--line:#DCE2EC;--ink:#101828;--grey:#5B6577;--r:8px}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--wash);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:16px;line-height:1.6}
+img,canvas{display:block;max-width:100%}
+h1,h2,h3{font-family:Archivo,sans-serif;font-weight:800;letter-spacing:-.02em;margin:0;line-height:1.08}
+a{color:inherit}
+.wrap{width:min(100% - 2rem,900px);margin-inline:auto}
+.top{background:var(--navy);color:#fff;border-bottom:3px solid var(--gold)}
+.top .wrap{display:flex;align-items:center;gap:1rem;height:70px}
+.logo{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:#fff}
+.logo svg{width:36px;height:36px;border-radius:8px;flex:none}
+.logo b{font-family:Archivo;font-weight:800;font-size:1.02rem;letter-spacing:-.02em}
+.top a.back{margin-left:auto;font-size:.9rem;color:#C4D3EE;text-decoration:none}
+.top a.back:hover{color:var(--gold)}
+.intro{padding:2.2rem 0 1.4rem}
+.intro h1{font-size:clamp(1.7rem,5vw,2.4rem);text-transform:uppercase}
+.rule{width:64px;height:5px;background:var(--gold);border-radius:3px;margin-bottom:1.1rem}
+.intro p{color:var(--grey);max-width:56ch;margin:.8rem 0 0}
+.stepper{display:flex;gap:.5rem;margin:1.6rem 0 1.2rem;flex-wrap:wrap}
+.stepper span{font-size:.78rem;font-weight:600;color:var(--grey);background:#fff;border:1px solid var(--line);padding:.35rem .75rem;border-radius:99px}
+.stepper span.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:1.4rem;margin-bottom:1.1rem}
+.card h2{font-size:1.05rem;margin-bottom:.25rem}
+.card .hint{color:var(--grey);font-size:.88rem;margin:0 0 1.1rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;padding:.78rem 1.3rem;border-radius:var(--r);border:1px solid transparent;font-family:Archivo;font-weight:700;font-size:.94rem;cursor:pointer;text-decoration:none}
+.btn--gold{background:var(--gold);color:var(--navy-dp)}.btn--gold:hover{background:#d8990c}
+.btn--navy{background:var(--navy);color:#fff}.btn--navy:hover{background:var(--navy-dp)}
+.btn--line{background:#fff;border-color:var(--line);color:var(--ink)}.btn--line:hover{border-color:var(--navy)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.drop{border:2px dashed var(--line);border-radius:10px;background:var(--wash);padding:2.4rem 1.2rem;text-align:center;cursor:pointer}
+.drop:hover,.drop.over{border-color:var(--gold);background:#FFFBF0}
+.drop:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.drop h3{font-size:1.08rem;margin-bottom:.35rem}
+.drop p{color:var(--grey);font-size:.9rem;margin:0}
+.cam{width:52px;height:52px;margin:0 auto .9rem;border-radius:50%;background:var(--navy);display:grid;place-items:center}
+.cam svg{width:24px;height:24px;stroke:var(--gold);fill:none;stroke-width:1.7}
+.finishes{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:.8rem}
+.fin{border:2px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;cursor:pointer;padding:0;text-align:left;font:inherit}
+.fin.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,178,27,.25)}
+.fin canvas{width:100%;aspect-ratio:4/3;object-fit:cover}
+.fin .t{padding:.55rem .65rem .7rem}
+.fin .t b{display:block;font-family:Archivo;font-weight:700;font-size:.85rem;line-height:1.2}
+.fin .t small{color:var(--grey);font-size:.74rem}
+.stagewrap{position:relative;background:#0B0F16;border-radius:10px;overflow:hidden;touch-action:none;user-select:none}
+#stage{width:100%;display:block}
+.handle{position:absolute;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:var(--gold);border:3px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.5);cursor:grab;touch-action:none;z-index:3}
+.handle:active{cursor:grabbing}
+.handle::after{content:"";position:absolute;inset:10px;border-radius:50%;background:var(--navy-dp)}
+.tools{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem;align-items:center}
+.toggle{display:inline-flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.toggle button{border:0;background:#fff;padding:.6rem 1rem;font:inherit;font-weight:600;font-size:.9rem;cursor:pointer;color:var(--grey)}
+.toggle button.on{background:var(--navy);color:#fff}
+.slider{display:flex;align-items:center;gap:.7rem;font-size:.86rem;color:var(--grey);flex:1;min-width:190px}
+.slider input{flex:1;accent-color:var(--gold)}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.f{display:flex;flex-direction:column;gap:.35rem}
+.f.full{grid-column:1/-1}
+.f label{font-size:.84rem;font-weight:600;color:var(--grey)}
+.f input,.f select,.f textarea{font:inherit;font-size:.95rem;padding:.7rem .8rem;border:1px solid var(--line);border-radius:var(--r);background:#fff;width:100%}
+.f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,178,27,.25)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.status{margin-top:1rem;padding:.85rem 1rem;border-radius:var(--r);font-size:.92rem;display:none}
+.status.show{display:block}
+.status.ok{background:#EAF7EE;color:#1B5E31;border:1px solid #A9DCB9}
+.status.err{background:#FDECEA;color:#8A2318;border:1px solid #F0B4AC}
+.status.info{background:#FFF7E4;color:#6B4E00;border:1px solid #F0D49A}
+.disclaimer{background:#FFF7E4;border:1px solid #F0D49A;color:#6B4E00;border-radius:10px;padding:.9rem 1.1rem;font-size:.86rem;margin:1.2rem 0 0}
+footer{background:var(--navy-dp);color:#8FA5CC;font-size:.85rem;padding:1.8rem 0;margin-top:2.5rem}
+.hide{display:none!important}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+@media(max-width:560px){.fields{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="wrap">
+  <a class="logo" href="index.html">
+    <svg viewBox="0 0 512 512" aria-hidden="true">
+      <rect width="512" height="512" rx="96" fill="#0B2A66"/>
+      <g transform="translate(22,83) scale(0.72)"><path d="M347 158C347 108 165 108 165 180c0 56 182 56 182 120 0 72-182 72-182 20" fill="none" stroke="#fff" stroke-width="46" stroke-linecap="round"/></g>
+      <g fill="#F5B21B"><rect x="260" y="177" width="33" height="158"/><rect x="260" y="177" width="128" height="33"/><rect x="260" y="240" width="104" height="33"/><rect x="260" y="302" width="128" height="33"/></g>
+    </svg>
+    <b>Swayam Enterprises</b>
+  </a>
+  <a class="back" href="index.html">← Back to site</a>
+</div></div>
+
+<div class="wrap">
+  <div class="intro">
+    <div class="rule"></div>
+    <h1>See it on your floor</h1>
+    <p>Take a photo of the room, choose the finish you like, and drag the four gold dots to the corners of your floor. You'll get a preview you can send straight to us.</p>
+    <div class="stepper">
+      <span id="s1" class="on">1 · Your photo</span>
+      <span id="s2">2 · Choose a finish</span>
+      <span id="s3">3 · Mark the floor</span>
+      <span id="s4">4 · Send it to us</span>
+    </div>
+  </div>
+
+  <!-- STEP 1 -->
+  <section class="card" id="cardUpload">
+    <h2>Photo of your floor</h2>
+    <p class="hint">Stand back and get the whole floor in frame. Daylight works best.</p>
+    <input type="file" id="file" accept="image/*" capture="environment" hidden>
+    <div class="drop" id="drop" tabindex="0" role="button" aria-label="Take or choose a photo of your floor">
+      <div class="cam" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 8h3l2-3h8l2 3h3v11H3z"/><circle cx="12" cy="13" r="4"/></svg></div>
+      <h3>Take a photo of the room</h3>
+      <p>Or choose one already on your phone</p>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="card hide" id="cardFinish">
+    <h2>Choose a finish</h2>
+    <p class="hint">These are indicative colours and patterns. Exact shades are matched on site from a physical sample card.</p>
+    <div class="finishes" id="finishes"></div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="card hide" id="cardStage">
+    <h2>Mark your floor</h2>
+    <p class="hint">Drag each gold dot to a corner of the floor area. Include only the floor, not the walls.</p>
+    <div class="stagewrap" id="stagewrap">
+      <canvas id="stage"></canvas>
+    </div>
+    <div class="tools">
+      <div class="toggle">
+        <button id="tgAfter" class="on" type="button">After</button>
+        <button id="tgBefore" type="button">Before</button>
+      </div>
+      <label class="slider">Gloss
+        <input type="range" id="gloss" min="0" max="100" value="45" aria-label="Gloss level">
+      </label>
+      <button class="btn btn--line" id="reset" type="button">Reset corners</button>
+      <button class="btn btn--line" id="download" type="button">Save image</button>
+    </div>
+    <div class="disclaimer">This is a rough preview, not a photograph of the finished job. Real colour, sheen and flake density depend on the light in your room and the sample you choose on site.</div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="card hide" id="cardSend">
+    <h2>Send it to us</h2>
+    <p class="hint">We'll come back with the right system for that floor and a price band.</p>
+    <form id="form" novalidate>
+      <div class="fields">
+        <div class="f"><label for="qname">Your name</label><input id="qname" name="name" type="text" autocomplete="name" maxlength="60" required></div>
+        <div class="f"><label for="qphone">Mobile number</label><input id="qphone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="15" required></div>
+        <div class="f"><label for="qarea">Rough area (sq ft)</label><input id="qarea" name="area" type="number" min="50" max="500000" inputmode="numeric"></div>
+        <div class="f"><label for="qspace">Type of space</label>
+          <select id="qspace" name="space">
+            <option>Home</option><option>Office</option><option>Factory or workshop</option>
+            <option>Warehouse or godown</option><option>Showroom or retail</option>
+            <option>Hospital or pharma</option><option>Food or dairy unit</option>
+            <option>Parking or basement</option><option>Garage</option><option>Something else</option>
+          </select>
+        </div>
+        <div class="f full"><label for="qloc">Site location (area, city)</label><input id="qloc" name="location" type="text" maxlength="80"></div>
+        <div class="f full"><label for="qmsg">Anything else we should know?</label><textarea id="qmsg" name="message" maxlength="600" placeholder="Cracks, oil stains, water pooling, when you need it done…"></textarea></div>
+      </div>
+      <div class="hp" aria-hidden="true"><label>Leave blank<input type="text" name="company_url" tabindex="-1" autocomplete="off"></label></div>
+      <div class="tools" style="margin-top:1.3rem">
+        <button class="btn btn--gold" id="send" type="submit">Send preview &amp; photo</button>
+        <a class="btn btn--line" id="callBtn" href="tel:+911234567890">Or just call</a>
+      </div>
+      <div class="status" id="status" role="status"></div>
+    </form>
+  </section>
+</div>
+
+<footer><div class="wrap">© <span id="yr"></span> Swayam Enterprises · <a href="index.html" style="color:#C0CFE9">Back to the website</a></div></footer>
+
+<script>
+const CONFIG = { brand:"Swayam Enterprises", person:"Swapnil Chavan",
+  phone:"+911234567890", whatsapp:"911234567890", email:"info@swayamenterprises.in", formKey:"" };
+
+const $ = id => document.getElementById(id);
+$('yr').textContent = new Date().getFullYear();
+
+async function loadContent(){
+  try{
+    const r = await fetch('content.json?v=' + Date.now(), { cache:'no-store' });
+    if(!r.ok) return null;
+    return await r.json();
+  }catch(e){ return null; }   // opened from file:// — fall back to the text in the page
+}
+
+(async () => {
+  const c = await loadContent();
+  if (c && c.business) Object.assign(CONFIG, {
+    phone:    c.business.phone    || CONFIG.phone,
+    whatsapp: c.business.whatsapp || CONFIG.whatsapp,
+    email:    c.business.email    || CONFIG.email,
+    person:   c.business.person   || CONFIG.person,
+    brand:    c.business.name     || CONFIG.brand
+  });
+  $('callBtn').href = 'tel:' + CONFIG.phone;
+})();
+
+/* ================= FINISH TEXTURES (drawn in code, no image files) ================= */
+const rnd = (a,b) => a + Math.random()*(b-a);
+
+function solid(ctx,w,h,base,sheen){
+  ctx.fillStyle = base; ctx.fillRect(0,0,w,h);
+  for(let i=0;i<7;i++){
+    const g = ctx.createRadialGradient(rnd(0,w),rnd(0,h),0,rnd(0,w),rnd(0,h),rnd(w*.25,w*.6));
+    g.addColorStop(0,'rgba(255,255,255,'+(sheen*0.5)+')'); g.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+  }
+}
+function metallic(ctx,w,h,c1,c2,c3){
+  ctx.fillStyle=c1; ctx.fillRect(0,0,w,h);
+  ctx.filter='blur(34px)';
+  for(let i=0;i<26;i++){
+    ctx.fillStyle = [c2,c3,c1][i%3];
+    ctx.globalAlpha = rnd(.35,.85);
+    ctx.beginPath();
+    ctx.ellipse(rnd(0,w),rnd(0,h),rnd(w*.08,w*.34),rnd(h*.04,h*.18),rnd(0,Math.PI),0,Math.PI*2);
+    ctx.fill();
+  }
+  ctx.filter='none'; ctx.globalAlpha=1;
+  ctx.filter='blur(10px)';
+  for(let i=0;i<14;i++){
+    ctx.strokeStyle='rgba(255,255,255,'+rnd(.06,.20)+')';
+    ctx.lineWidth=rnd(6,26); ctx.beginPath();
+    let x=rnd(0,w), y=rnd(0,h); ctx.moveTo(x,y);
+    for(let k=0;k<4;k++){ x+=rnd(-w*.3,w*.3); y+=rnd(-h*.2,h*.2); ctx.lineTo(x,y); }
+    ctx.stroke();
+  }
+  ctx.filter='none';
+}
+function flake(ctx,w,h,base,cols){
+  ctx.fillStyle=base; ctx.fillRect(0,0,w,h);
+  for(let i=0;i<5200;i++){
+    ctx.save();
+    ctx.translate(rnd(0,w),rnd(0,h)); ctx.rotate(rnd(0,Math.PI));
+    ctx.fillStyle = cols[(Math.random()*cols.length)|0];
+    ctx.globalAlpha = rnd(.55,1);
+    ctx.fillRect(0,0,rnd(3,10),rnd(3,9));
+    ctx.restore();
+  }
+  ctx.globalAlpha=1;
+}
+function grit(ctx,w,h,base){
+  ctx.fillStyle=base; ctx.fillRect(0,0,w,h);
+  for(let i=0;i<26000;i++){
+    ctx.fillStyle = Math.random()>.5 ? 'rgba(255,255,255,.14)' : 'rgba(0,0,0,.20)';
+    ctx.fillRect(rnd(0,w),rnd(0,h),2,2);
+  }
+}
+function lined(ctx,w,h,base,line){
+  solid(ctx,w,h,base,.16);
+  ctx.fillStyle=line;
+  ctx.fillRect(0,h*0.30,w,h*0.045);
+  ctx.fillRect(0,h*0.68,w,h*0.045);
+}
+
+const FINISHES = [
+  {id:'sl-grey',  name:'Light grey',      sys:'Self-levelling epoxy', gloss:.55, draw:(c,w,h)=>solid(c,w,h,'#B6BABF',.32)},
+  {id:'sl-blue',  name:'Signal blue',     sys:'Self-levelling epoxy', gloss:.60, draw:(c,w,h)=>solid(c,w,h,'#1D4E96',.30)},
+  {id:'sl-green', name:'Industrial green',sys:'Self-levelling epoxy', gloss:.50, draw:(c,w,h)=>solid(c,w,h,'#2C6A50',.28)},
+  {id:'sl-red',   name:'Oxide red',       sys:'Self-levelling epoxy', gloss:.50, draw:(c,w,h)=>solid(c,w,h,'#8E3B2E',.28)},
+  {id:'mt-silver',name:'Graphite silver', sys:'Metallic epoxy',       gloss:.80, draw:(c,w,h)=>metallic(c,w,h,'#6E747C','#3A3F47','#C3C8CE')},
+  {id:'mt-blue',  name:'Ocean blue',      sys:'Metallic epoxy',       gloss:.85, draw:(c,w,h)=>metallic(c,w,h,'#1C4C86','#0A2649','#7FB6E6')},
+  {id:'mt-copper',name:'Copper bronze',   sys:'Metallic epoxy',       gloss:.78, draw:(c,w,h)=>metallic(c,w,h,'#8A5A2B','#4A2E13','#D9A466')},
+  {id:'fl-grey',  name:'Grey flake',      sys:'Flake / chip system',  gloss:.42, draw:(c,w,h)=>flake(c,w,h,'#A9ADB2',['#3E4348','#EFEFEF','#7A8087','#1F2328'])},
+  {id:'fl-tan',   name:'Sand flake',      sys:'Flake / chip system',  gloss:.42, draw:(c,w,h)=>flake(c,w,h,'#C9B48F',['#6B573A','#F3EADB','#94795A','#3A2E1D'])},
+  {id:'as-char',  name:'Charcoal anti-skid',sys:'Anti-skid deck coating', gloss:.16, draw:(c,w,h)=>grit(c,w,h,'#41474E')},
+  {id:'ln-grey',  name:'Grey + line marking',sys:'Warehouse coating', gloss:.48, draw:(c,w,h)=>lined(c,w,h,'#9BA0A6','#F2C21B')},
+  {id:'pu-cream', name:'Cream PU screed', sys:'PU screed',            gloss:.24, draw:(c,w,h)=>grit(c,w,h,'#CBC3AE')}
+];
+
+const TEX = {};
+function texture(f){
+  if (TEX[f.id]) return TEX[f.id];
+  const c = document.createElement('canvas'); c.width = 900; c.height = 900;
+  f.draw(c.getContext('2d'), 900, 900);
+  return TEX[f.id] = c;
+}
+
+/* thumbnails */
+let chosen = null;
+FINISHES.forEach(f => {
+  const b = document.createElement('button'); b.className='fin'; b.type='button';
+  const cv = document.createElement('canvas'); cv.width=200; cv.height=150;
+  f.draw(cv.getContext('2d'),200,150);
+  const t = document.createElement('div'); t.className='t';
+  t.innerHTML = '<b></b><small></small>';
+  t.querySelector('b').textContent = f.name;
+  t.querySelector('small').textContent = f.sys;
+  b.append(cv,t);
+  b.onclick = () => {
+    document.querySelectorAll('.fin').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); chosen = f;
+    $('gloss').value = Math.round(f.gloss*100);
+    step(3); $('cardStage').classList.remove('hide'); $('cardSend').classList.remove('hide');
+    paint();
+    $('cardStage').scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  $('finishes').append(b);
+});
+
+/* ================= photo upload ================= */
+let photo = null;               // HTMLImageElement
+const stage = $('stage'), sctx = stage.getContext('2d');
+let quad = null;                // 4 points in canvas coords
+let showAfter = true;
+
+$('drop').addEventListener('click', ()=>$('file').click());
+$('drop').addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();$('file').click();} });
+['dragenter','dragover'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.add('over')}));
+['dragleave','drop'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.remove('over')}));
+$('drop').addEventListener('drop', e=>load(e.dataTransfer.files[0]));
+$('file').addEventListener('change', ()=>{ load($('file').files[0]); $('file').value=''; });
+
+function load(file){
+  if(!file || !file.type.startsWith('image/')) return;
+  const url = URL.createObjectURL(file), img = new Image();
+  img.onload = () => {
+    URL.revokeObjectURL(url);
+    const max = 1400, s = Math.min(1, max/Math.max(img.width,img.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.width*s); c.height = Math.round(img.height*s);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    photo = c;
+    stage.width = c.width; stage.height = c.height;
+    resetQuad();
+    $('cardFinish').classList.remove('hide');
+    step(2);
+    $('cardFinish').scrollIntoView({behavior:'smooth',block:'start'});
+    if (chosen){ $('cardStage').classList.remove('hide'); $('cardSend').classList.remove('hide'); }
+    paint();
+  };
+  img.onerror = ()=>{ URL.revokeObjectURL(url); say("That file couldn't be read as a photo.",'err'); };
+  img.src = url;
+}
+function resetQuad(){
+  const w = stage.width, h = stage.height;
+  quad = [[w*0.26,h*0.55],[w*0.74,h*0.55],[w*1.02,h*0.99],[w*-0.02,h*0.99]];
+  placeHandles();
+}
+function step(n){ for(let i=1;i<=4;i++) $('s'+i).classList.toggle('on', i<=n); }
+
+/* ================= handles ================= */
+const handles = [];
+for (let i=0;i<4;i++){
+  const el = document.createElement('div'); el.className='handle'; el.dataset.i = i;
+  el.setAttribute('role','slider'); el.setAttribute('aria-label','Floor corner '+(i+1));
+  $('stagewrap').append(el); handles.push(el);
+}
+function placeHandles(){
+  if(!quad) return;
+  const r = stage.getBoundingClientRect(), sw = r.width/stage.width, sh = r.height/stage.height;
+  handles.forEach((el,i)=>{ el.style.left = (quad[i][0]*sw)+'px'; el.style.top = (quad[i][1]*sh)+'px'; });
+}
+window.addEventListener('resize', placeHandles);
+let drag = null;
+$('stagewrap').addEventListener('pointerdown', e => {
+  if(!e.target.classList.contains('handle')) return;
+  drag = +e.target.dataset.i; e.target.setPointerCapture(e.pointerId);
+});
+$('stagewrap').addEventListener('pointermove', e => {
+  if(drag === null || !quad) return;
+  const r = stage.getBoundingClientRect();
+  const x = (e.clientX - r.left) / r.width  * stage.width;
+  const y = (e.clientY - r.top)  / r.height * stage.height;
+  quad[drag] = [Math.max(-stage.width*.15, Math.min(stage.width*1.15, x)),
+                Math.max(-stage.height*.15, Math.min(stage.height*1.15, y))];
+  placeHandles(); paint();
+});
+['pointerup','pointercancel'].forEach(ev=>$('stagewrap').addEventListener(ev, ()=>{ drag = null; }));
+$('reset').onclick = ()=>{ resetQuad(); paint(); };
+$('gloss').oninput = paint;
+$('tgAfter').onclick = ()=>{ showAfter=true; $('tgAfter').classList.add('on'); $('tgBefore').classList.remove('on'); toggleHandles(true); paint(); };
+$('tgBefore').onclick = ()=>{ showAfter=false; $('tgBefore').classList.add('on'); $('tgAfter').classList.remove('on'); toggleHandles(false); paint(); };
+function toggleHandles(on){ handles.forEach(h=>h.style.display = on ? '' : 'none'); }
+
+/* ================= perspective warp ================= */
+function homography(d){
+  const [[x0,y0],[x1,y1],[x2,y2],[x3,y3]] = d;
+  const dx1=x1-x2, dy1=y1-y2, dx2=x3-x2, dy2=y3-y2, sx=x0-x1+x2-x3, sy=y0-y1+y2-y3;
+  const den = dx1*dy2 - dx2*dy1;
+  if (!den) return null;
+  const g = (sx*dy2 - dx2*sy)/den, h = (dx1*sy - sx*dy1)/den;
+  return { a:x1-x0+g*x1, b:x3-x0+h*x3, c:x0, d:y1-y0+g*y1, e:y3-y0+h*y3, f:y0, g, h };
+}
+function proj(H,u,v){ const w = H.g*u + H.h*v + 1; return [(H.a*u+H.b*v+H.c)/w, (H.d*u+H.e*v+H.f)/w]; }
+function tri(ctx,img,s,d){
+  const [[x0,y0],[x1,y1],[x2,y2]] = s, [[X0,Y0],[X1,Y1],[X2,Y2]] = expand(d,0.7);
+  const den = x0*(y2-y1) - x1*(y2-y0) + x2*(y1-y0);
+  if(!den) return;
+  const a=(X0*(y2-y1)-X1*(y2-y0)+X2*(y1-y0))/den, b=(Y0*(y2-y1)-Y1*(y2-y0)+Y2*(y1-y0))/den,
+        c=(x0*(X2-X1)-x1*(X2-X0)+x2*(X1-X0))/den, d2=(x0*(Y2-Y1)-x1*(Y2-Y0)+x2*(Y1-Y0))/den,
+        e=(x0*(y1*X2-y2*X1)+y0*(x2*X1-x1*X2)+(x1*y2-x2*y1)*X0)/den,
+        f=(x0*(y1*Y2-y2*Y1)+y0*(x2*Y1-x1*Y2)+(x1*y2-x2*y1)*Y0)/den;
+  ctx.save(); ctx.beginPath();
+  ctx.moveTo(X0,Y0); ctx.lineTo(X1,Y1); ctx.lineTo(X2,Y2); ctx.closePath(); ctx.clip();
+  ctx.setTransform(a,b,c,d2,e,f); ctx.drawImage(img,0,0); ctx.restore();
+}
+function expand(p,by){
+  const cx=(p[0][0]+p[1][0]+p[2][0])/3, cy=(p[0][1]+p[1][1]+p[2][1])/3;
+  return p.map(([x,y])=>{ const dx=x-cx, dy=y-cy, L=Math.hypot(dx,dy)||1; return [x+dx/L*by, y+dy/L*by]; });
+}
+function quadPath(ctx){
+  ctx.beginPath(); ctx.moveTo(quad[0][0],quad[0][1]);
+  for(let i=1;i<4;i++) ctx.lineTo(quad[i][0],quad[i][1]);
+  ctx.closePath();
+}
+
+function paint(){
+  if(!photo) return;
+  sctx.setTransform(1,0,0,1,0,0);
+  sctx.clearRect(0,0,stage.width,stage.height);
+  sctx.drawImage(photo,0,0);
+  if(!showAfter || !chosen || !quad) return;
+
+  const H = homography(quad); if(!H) return;
+  const tex = texture(chosen), N = 26;
+  const warp = document.createElement('canvas');
+  warp.width = stage.width; warp.height = stage.height;
+  const wc = warp.getContext('2d');
+  const cw = tex.width/N, ch = tex.height/N;
+
+  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
+    const u0=i/N,u1=(i+1)/N,v0=j/N,v1=(j+1)/N;
+    const p00=proj(H,u0,v0), p10=proj(H,u1,v0), p11=proj(H,u1,v1), p01=proj(H,u0,v1);
+    const s00=[i*cw,j*ch], s10=[(i+1)*cw,j*ch], s11=[(i+1)*cw,(j+1)*ch], s01=[i*cw,(j+1)*ch];
+    tri(wc,tex,[s00,s10,s11],[p00,p10,p11]);
+    tri(wc,tex,[s00,s11,s01],[p00,p11,p01]);
+  }
+
+  const g = (+$('gloss').value)/100;
+  sctx.save(); quadPath(sctx); sctx.clip();
+  sctx.drawImage(warp,0,0);
+  // put the room's own light and shade back over the new colour
+  sctx.globalCompositeOperation = 'luminosity';
+  sctx.globalAlpha = 0.42;
+  sctx.drawImage(photo,0,0);
+  sctx.globalCompositeOperation = 'source-over'; sctx.globalAlpha = 1;
+  // sheen
+  if (g > 0.02){
+    const lg = sctx.createLinearGradient(0, stage.height*0.45, stage.width*0.7, stage.height);
+    lg.addColorStop(0,'rgba(255,255,255,'+(0.30*g)+')');
+    lg.addColorStop(0.5,'rgba(255,255,255,'+(0.10*g)+')');
+    lg.addColorStop(1,'rgba(255,255,255,0)');
+    sctx.globalCompositeOperation='screen'; sctx.fillStyle=lg;
+    quadPath(sctx); sctx.fill();
+    sctx.globalCompositeOperation='source-over';
+  }
+  sctx.restore();
+}
+
+/* ================= export ================= */
+function render(){
+  const out = document.createElement('canvas');
+  out.width = stage.width; out.height = stage.height + 74;
+  const c = out.getContext('2d');
+  c.fillStyle = '#0B2A66'; c.fillRect(0,0,out.width,out.height);
+  const wasAfter = showAfter; showAfter = true; paint(); showAfter = wasAfter;
+  c.drawImage(stage,0,0);
+  c.fillStyle = '#F5B21B'; c.fillRect(0, stage.height, out.width, 4);
+  c.fillStyle = '#FFFFFF';
+  c.font = '600 ' + Math.round(out.width*0.033) + 'px Inter, sans-serif';
+  c.fillText(CONFIG.brand, 18, stage.height + 34);
+  c.fillStyle = '#BCCCE9';
+  c.font = '400 ' + Math.round(out.width*0.026) + 'px Inter, sans-serif';
+  c.fillText(chosen ? chosen.name + ' — ' + chosen.sys : 'Floor preview', 18, stage.height + 62);
+  paint();
+  return out;
+}
+function toBlob(cv){ return new Promise(r => cv.toBlob(r, 'image/jpeg', 0.85)); }
+
+$('download').onclick = async () => {
+  const blob = await toBlob(render());
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'floor-preview.jpg'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+};
+
+/* ================= send ================= */
+const statusEl = $('status');
+function say(m,k){ statusEl.textContent=m; statusEl.className='status show '+(k||'info'); }
+function clearSay(){ statusEl.className='status'; statusEl.textContent=''; }
+
+$('form').addEventListener('submit', async e => {
+  e.preventDefault(); clearSay();
+  const f = e.target;
+  if (f.company_url.value) return;
+  const name = f.name.value.trim(), phone = f.phone.value.replace(/\D/g,'');
+  if (name.length < 2){ say('Add your name so we know who to call back.','err'); f.name.focus(); return; }
+  if (phone.length < 10){ say('Enter a 10-digit mobile number.','err'); f.phone.focus(); return; }
+  if (!photo || !chosen){ say('Add a photo and pick a finish first.','err'); return; }
+
+  const summary = 'Floor visualiser enquiry\n' +
+    'Name: ' + name + '\nPhone: ' + phone +
+    '\nFinish wanted: ' + chosen.name + ' (' + chosen.sys + ')' +
+    '\nSpace: ' + f.space.value +
+    '\nArea: ' + (f.area.value || 'not given') + ' sq ft' +
+    '\nLocation: ' + (f.location.value.trim() || 'not given') +
+    '\nNotes: ' + (f.message.value.trim() || 'none');
+
+  const btn = $('send'); btn.disabled = true; btn.textContent = 'Sending…';
+  try{
+    const preview = await toBlob(render());
+    const orig = await toBlob(photo);
+    const files = [ new File([preview],'floor-preview.jpg',{type:'image/jpeg'}),
+                    new File([orig],'floor-original.jpg',{type:'image/jpeg'}) ];
+    if (navigator.canShare && navigator.canShare({files})){
+      await navigator.share({ files, text: summary, title: 'Floor enquiry — ' + CONFIG.brand });
+      say('Shared. Pick ' + CONFIG.person + ' in WhatsApp to finish sending.','ok');
+      return;
+    }
+    if (CONFIG.formKey){
+      const fd = new FormData();
+      fd.append('access_key', CONFIG.formKey);
+      fd.append('subject','Floor visualiser — ' + name);
+      fd.append('from_name', CONFIG.brand + ' website');
+      fd.append('message', summary);
+      fd.append('preview', preview, 'floor-preview.jpg');
+      fd.append('original', orig, 'floor-original.jpg');
+      const j = await (await fetch('https://api.web3forms.com/submit',{method:'POST',body:fd})).json();
+      if(!j.success) throw new Error(j.message || 'send failed');
+      say('Sent. ' + CONFIG.person + ' will call you on ' + phone + '.','ok');
+      return;
+    }
+    window.open('https://wa.me/'+CONFIG.whatsapp+'?text='+encodeURIComponent(summary),'_blank','noopener');
+    say('WhatsApp is open with your details. Save the preview with the Save image button and attach it there — this browser cannot send it for you.','info');
+  }catch(err){
+    if (err && err.name === 'AbortError') clearSay();
+    else say("That didn't go through. Call " + CONFIG.phone + " or message us on WhatsApp instead.",'err');
+  }finally{ btn.disabled = false; btn.textContent = 'Send preview & photo'; }
+});
+</script>
+</body>
+</html>

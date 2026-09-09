@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>One-time setup — Swayam Enterprises admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0B2A66;--navy-dp:#061A45;--gold:#F5B21B;--wash:#F4F6FA;--line:#DCE2EC;--ink:#101828;--grey:#5B6577;--r:8px}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--wash);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:16px;line-height:1.6}
+h1,h2{font-family:Archivo,sans-serif;font-weight:800;letter-spacing:-.02em;margin:0;line-height:1.1}
+.wrap{width:min(100% - 2rem,640px);margin:3rem auto 5rem}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:2rem}
+h1{font-size:1.5rem;margin-bottom:.4rem}
+h2{font-size:1rem;margin:1.8rem 0 .9rem;color:var(--navy)}
+p.hint{color:var(--grey);font-size:.92rem;margin:0 0 1.2rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.f{display:flex;flex-direction:column;gap:.35rem}
+.f.full{grid-column:1/-1}
+.f label{font-size:.84rem;font-weight:600;color:var(--grey)}
+.f input{font:inherit;font-size:.95rem;padding:.7rem .8rem;border:1px solid var(--line);border-radius:var(--r);width:100%}
+.f input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,178,27,.25)}
+.f small{color:var(--grey);font-size:.78rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:.85rem 1.4rem;border-radius:var(--r);border:0;font-family:Archivo;font-weight:700;font-size:.96rem;cursor:pointer;background:var(--gold);color:var(--navy-dp);width:100%;margin-top:1.4rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+ol{padding-left:1.3rem;color:var(--grey);font-size:.9rem}
+ol li{margin-bottom:.45rem}
+ol b{color:var(--ink)}
+.box{border-radius:10px;padding:.95rem 1.1rem;font-size:.88rem;margin-top:1.2rem}
+.warn{background:#FFF7E4;border:1px solid #F0D49A;color:#6B4E00}
+.err{background:#FDECEA;border:1px solid #F0B4AC;color:#8A2318}
+.ok{background:#EAF7EE;border:1px solid #A9DCB9;color:#1B5E31}
+.meter{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:.35rem}
+.meter i{display:block;height:100%;width:0;background:#C62828;transition:width .2s,background .2s}
+.hide{display:none}
+@media(max-width:560px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="card">
+  <h1>One-time setup</h1>
+  <p class="hint">Run this once, on a laptop, over https. It creates the login for the site admin. After that nobody needs a token again.</p>
+
+  <h2>1. Get a GitHub token</h2>
+  <ol>
+    <li>GitHub → <b>Settings → Developer settings → Personal access tokens → Fine-grained tokens</b></li>
+    <li><b>Generate new token.</b> Repository access: <b>Only select repositories</b> → this website's repo</li>
+    <li>Permissions → Repository permissions → <b>Contents: Read and write</b></li>
+    <li>Set the longest expiry allowed, then copy the token</li>
+  </ol>
+
+  <h2>2. Fill this in</h2>
+  <div class="grid">
+    <div class="f"><label for="owner">GitHub username or org</label><input id="owner" placeholder="bunnyenterprises"></div>
+    <div class="f"><label for="repo">Repository name</label><input id="repo" placeholder="swayam-enterprises"></div>
+    <div class="f"><label for="branch">Branch</label><input id="branch" value="main"></div>
+    <div class="f"><label for="token">GitHub token</label><input id="token" type="password" autocomplete="off" placeholder="github_pat_…"></div>
+    <div class="f full"><label for="user">Login username for the client</label><input id="user" placeholder="swapnil" autocomplete="off"></div>
+    <div class="f full"><label for="pw">Password</label><input id="pw" type="password" autocomplete="new-password">
+      <div class="meter"><i id="bar"></i></div><small id="pwHint">At least 14 characters. Four unrelated words works well.</small></div>
+    <div class="f full"><label for="pw2">Repeat password</label><input id="pw2" type="password" autocomplete="new-password"></div>
+  </div>
+
+  <button class="btn" id="go">Create the login</button>
+  <div id="msg" class="box hide"></div>
+
+  <div class="box warn"><b>The encrypted file sits in a public repository.</b> Anyone can download it and try passwords against it offline. A short or common password will eventually be broken. Use four unrelated words. Write it down somewhere safe — it cannot be recovered.</div>
+  <div class="box warn"><b>Delete setup.html from the repository once this is done.</b></div>
+</div></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const TE = new TextEncoder();
+const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const ITER = 310000;
+const show = (k,h)=>{ const m=$('msg'); m.className='box '+k; m.innerHTML=h; };
+
+$('pw').addEventListener('input', () => {
+  const v = $('pw').value;
+  let score = Math.min(100, v.length * 5);
+  if (/[a-z]/.test(v) && /[A-Z0-9]/.test(v)) score += 10;
+  if (/\s/.test(v)) score += 10;
+  score = Math.min(100, score);
+  const bar = $('bar');
+  bar.style.width = score + '%';
+  bar.style.background = score < 45 ? '#C62828' : score < 75 ? '#E8A317' : '#2E7D32';
+  $('pwHint').textContent = v.length < 14
+    ? 'Too short — at least 14 characters.'
+    : (score < 75 ? 'Acceptable. Longer is better.' : 'Good.');
+});
+
+if (!window.crypto || !crypto.subtle){
+  show('err','This page must be opened over <b>https</b> (or localhost). Encryption is not available on a file:// page.');
+  $('go').disabled = true;
+}
+
+async function keyFrom(pw, salt){
+  const base = await crypto.subtle.importKey('raw', TE.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations:ITER, hash:'SHA-256'},
+    base, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']);
+}
+
+$('go').addEventListener('click', async () => {
+  const owner=$('owner').value.trim(), repo=$('repo').value.trim(),
+        branch=$('branch').value.trim()||'main', token=$('token').value.trim(),
+        user=$('user').value.trim(), pw=$('pw').value, pw2=$('pw2').value;
+
+  if(!owner||!repo||!token||!user){ show('err','Fill in every field.'); return; }
+  if(pw.length < 14){ show('err','Password must be at least 14 characters.'); return; }
+  if(pw !== pw2){ show('err','The two passwords do not match.'); return; }
+
+  const btn=$('go'); btn.disabled=true; btn.textContent='Working…';
+  try{
+    const H = {'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};
+    const check = await fetch('https://api.github.com/repos/'+owner+'/'+repo, {headers:H});
+    if(check.status===401) throw new Error('GitHub rejected the token. Copy it again.');
+    if(check.status===404) throw new Error('Repository not found, or the token has no access to it.');
+    if(!check.ok) throw new Error('GitHub error '+check.status);
+
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv   = crypto.getRandomValues(new Uint8Array(12));
+    const key  = await keyFrom(pw, salt);
+    const ct   = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, TE.encode(token));
+
+    const auth = {v:1, iter:ITER, owner, repo, branch, user:user.toLowerCase(),
+                  salt:b64(salt), iv:b64(iv), token:b64(ct)};
+    const body = JSON.stringify(auth, null, 2);
+    const url  = 'https://api.github.com/repos/'+owner+'/'+repo+'/contents/auth.json';
+
+    let sha;
+    const cur = await fetch(url+'?ref='+encodeURIComponent(branch), {headers:H});
+    if(cur.ok) sha = (await cur.json()).sha;
+
+    const put = await fetch(url, {method:'PUT', headers:{...H,'Content-Type':'application/json'},
+      body: JSON.stringify({message:'Set up admin login', branch,
+        content: btoa(String.fromCharCode(...TE.encode(body))), ...(sha?{sha}:{})})});
+    if(!put.ok) throw new Error('Could not write auth.json: '+put.status+' '+(await put.text()).slice(0,140));
+
+    $('token').value=''; $('pw').value=''; $('pw2').value=''; $('bar').style.width='0';
+    show('ok','<b>Done.</b> The client can sign in at <a href="admin.html">admin.html</a> with username <b>'+
+      user.toLowerCase()+'</b> and the password you chose.<br><br>Now delete <b>setup.html</b> from the repository.');
+  }catch(e){ show('err', e.message); }
+  btn.disabled=false; btn.textContent='Create the login';
+});
+</script>
+</body>
+</html>
