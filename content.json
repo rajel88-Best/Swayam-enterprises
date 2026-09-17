@@ -1,0 +1,72 @@
+{
+  "business": {
+    "name": "Swayam Enterprises",
+    "person": "Swapnil Chavan",
+    "phone": "+911234567890",
+    "phoneDisplay": "+91 12345 67890",
+    "whatsapp": "911234567890",
+    "email": "info@swayamenterprises.in",
+    "address": "Add full address here, Maharashtra",
+    "hours": "Mon–Sat, 9:00 am – 7:00 pm",
+    "gst": "Add GSTIN"
+  },
+  "hero": {
+    "eyebrow": "Strong. Smooth. Stunning.",
+    "title1": "Epoxy",
+    "title2": "flooring",
+    "tagline": "Built to last. Designed to impress.",
+    "lede": "High-performance epoxy, PU and self-levelling floors for homes, businesses and industries across Maharashtra. Most jobs are walkable in 24 hours."
+  },
+  "ba": [
+    {
+      "before": "images/before-1.jpg",
+      "after": "images/after-1.jpg",
+      "title": "Warehouse floor, 9,000 sq ft",
+      "note": "Self-levelling epoxy with aisle marking. Handed over in phases over 6 nights."
+    },
+    {
+      "before": "images/before-2.jpg",
+      "after": "images/after-2.jpg",
+      "title": "Home garage, Pune",
+      "note": "Oil-stained concrete ground back and finished in flake epoxy."
+    },
+    {
+      "before": "images/before-3.jpg",
+      "after": "images/after-3.jpg",
+      "title": "Furniture showroom",
+      "note": "Cracked tiles removed, metallic epoxy poured over a levelled screed."
+    },
+    {
+      "before": "images/before-4.jpg",
+      "after": "images/after-4.jpg",
+      "title": "Dairy processing hall",
+      "note": "6 mm PU screed with coved skirting for daily hot washdown."
+    }
+  ],
+  "gallery": [
+    {
+      "src": "images/work-1.jpg",
+      "caption": "Self-levelling epoxy, assembly floor"
+    },
+    {
+      "src": "images/work-2.jpg",
+      "caption": "PU screed with coved skirting, dairy hall"
+    },
+    {
+      "src": "images/work-3.jpg",
+      "caption": "Anti-skid deck coating, basement parking"
+    },
+    {
+      "src": "images/work-4.jpg",
+      "caption": "Metallic epoxy, furniture showroom"
+    },
+    {
+      "src": "images/work-5.jpg",
+      "caption": "Line marking and aisle repair, godown"
+    },
+    {
+      "src": "images/work-6.jpg",
+      "caption": "ESD flooring, electronics assembly room"
+    }
+  ]
+}

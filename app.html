@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Swayam Floor Studio</title>
+<meta name="theme-color" content="#0A0E14">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Floor Studio">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0E14; --panel:#121823; --panel-2:#1A2230; --edge:#26303F;
+  --gold:#F5B21B; --navy:#1E4FA8; --text:#EDF1F7; --dim:#8290A6;
+}
+*,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overscroll-behavior:none}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:Inter,system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.5;
+  -webkit-user-select:none;user-select:none;overflow:hidden}
+canvas,img{display:block}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+.app{height:100dvh;display:flex;flex-direction:column}
+
+/* ---------- top bar ---------- */
+.bar{flex:none;display:flex;align-items:center;gap:.7rem;padding:calc(env(safe-area-inset-top) + .6rem) 1rem .6rem;
+     background:var(--bg);border-bottom:1px solid var(--edge)}
+.bar svg.mark{width:28px;height:28px;border-radius:7px;flex:none}
+.bar .title{font-family:Archivo;font-weight:800;font-size:.95rem;letter-spacing:-.02em;line-height:1}
+.bar .title small{display:block;font-family:Inter;font-weight:500;font-size:.63rem;letter-spacing:.14em;
+     text-transform:uppercase;color:var(--dim);margin-top:.22rem}
+.dots{margin-left:auto;display:flex;gap:.3rem}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--edge);transition:background .2s,width .2s}
+.dots i.on{background:var(--gold);width:18px;border-radius:4px}
+
+/* ---------- viewport ---------- */
+.view{flex:1;position:relative;display:grid;place-items:center;overflow:hidden;background:#05080C;min-height:0}
+#stage{max-width:100%;max-height:100%;object-fit:contain;touch-action:manipulation}
+.empty{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:1.1rem;padding:2rem;text-align:center}
+.empty h1{font-family:Archivo;font-weight:800;font-size:1.5rem;letter-spacing:-.025em;margin:0}
+.empty p{color:var(--dim);margin:0;max-width:30ch;font-size:.92rem}
+.shutter{width:86px;height:86px;border-radius:50%;background:var(--gold);display:grid;place-items:center;
+  box-shadow:0 0 0 8px rgba(245,178,27,.14),0 12px 32px rgba(0,0,0,.55)}
+.shutter svg{width:36px;height:36px;stroke:#0A0E14;fill:none;stroke-width:1.9}
+.shutter:active{transform:scale(.95)}
+.pick{color:var(--dim);font-size:.86rem;text-decoration:underline;text-underline-offset:3px}
+
+.toast{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;max-width:88%;
+  background:rgba(10,14,20,.94);border:1px solid var(--edge);border-radius:99px;
+  padding:.5rem .95rem;font-size:.8rem;color:var(--text);opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+.toast b{color:var(--gold)}
+
+.busy{position:absolute;inset:0;display:none;place-items:center;background:rgba(5,8,12,.6);backdrop-filter:blur(2px)}
+.busy.show{display:grid}
+.spin{width:34px;height:34px;border:3px solid var(--edge);border-top-color:var(--gold);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ---------- dock ---------- */
+.dock{flex:none;background:var(--panel);border-top:1px solid var(--edge);
+      padding-bottom:env(safe-area-inset-bottom)}
+.swatches{display:flex;gap:.6rem;overflow-x:auto;padding:.85rem 1rem .2rem;scrollbar-width:none}
+.swatches::-webkit-scrollbar{display:none}
+.sw{flex:none;width:60px;text-align:center}
+.sw canvas{width:56px;height:56px;border-radius:14px;border:2px solid transparent;display:block;margin:0 auto}
+.sw.on canvas{border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,178,27,.22)}
+.sw span{display:block;font-size:.62rem;color:var(--dim);margin-top:.3rem;line-height:1.25;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sw.on span{color:var(--text)}
+
+.tools{display:flex;align-items:center;gap:.25rem;padding:.5rem .6rem .75rem;overflow-x:auto;scrollbar-width:none}
+.tools::-webkit-scrollbar{display:none}
+.tool{flex:none;display:flex;flex-direction:column;align-items:center;gap:.22rem;padding:.45rem .5rem;border-radius:10px;min-width:56px}
+.tool svg{width:21px;height:21px;stroke:var(--text);fill:none;stroke-width:1.7}
+.tool span{font-size:.62rem;color:var(--dim);letter-spacing:.02em}
+.tool:active,.tool.on{background:var(--panel-2)}
+.tool.on svg{stroke:var(--gold)} .tool.on span{color:var(--gold)}
+.tool[disabled]{opacity:.32}
+.tool.primary{margin-left:auto;background:var(--gold);border-radius:12px;padding:.55rem .9rem;min-width:auto;flex-direction:row;gap:.4rem}
+.tool.primary svg{stroke:#0A0E14;width:18px;height:18px}
+.tool.primary span{color:#0A0E14;font-family:Archivo;font-weight:700;font-size:.85rem}
+
+/* ---------- sheets ---------- */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--panel);
+  border-top:1px solid var(--edge);border-radius:18px 18px 0 0;padding:1rem 1.1rem calc(1.2rem + env(safe-area-inset-bottom));
+  transform:translateY(105%);transition:transform .25s ease;max-height:86dvh;overflow-y:auto}
+.sheet.open{transform:translateY(0)}
+.grip{width:38px;height:4px;border-radius:2px;background:var(--edge);margin:0 auto .9rem}
+.sheet h2{font-family:Archivo;font-weight:800;font-size:1.05rem;margin:0 0 .2rem;letter-spacing:-.02em}
+.sheet .sub{color:var(--dim);font-size:.85rem;margin:0 0 1rem}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:39;opacity:0;pointer-events:none;transition:opacity .25s}
+.scrim.open{opacity:1;pointer-events:auto}
+
+.ctl{margin-bottom:1.2rem}
+.ctl label{display:flex;justify-content:space-between;font-size:.84rem;color:var(--dim);margin-bottom:.45rem}
+.ctl label b{color:var(--text);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--gold);height:26px}
+
+.fields{display:grid;gap:.85rem}
+.fld{display:flex;flex-direction:column;gap:.3rem}
+.fld label{font-size:.78rem;font-weight:600;color:var(--dim)}
+.fld input,.fld select,.fld textarea{font:inherit;font-size:.95rem;padding:.7rem .8rem;border:1px solid var(--edge);
+  border-radius:10px;background:var(--panel-2);color:var(--text);width:100%;-webkit-user-select:text;user-select:text}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--gold)}
+.fld textarea{resize:vertical;min-height:72px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.cta{width:100%;background:var(--gold);color:#0A0E14;font-family:Archivo;font-weight:800;font-size:1rem;
+  padding:.95rem;border-radius:12px;margin-top:.4rem}
+.cta[disabled]{opacity:.5}
+.ghost{width:100%;border:1px solid var(--edge);color:var(--text);padding:.85rem;border-radius:12px;
+  font-family:Archivo;font-weight:700;font-size:.92rem;margin-top:.6rem}
+.note{border-radius:10px;padding:.75rem .9rem;font-size:.85rem;margin-top:.8rem;display:none}
+.note.show{display:block}
+.note.ok{background:#12301F;border:1px solid #2C6B44;color:#A7E6C0}
+.note.err{background:#331716;border:1px solid #79332C;color:#F3B7B0}
+.note.info{background:#2B2410;border:1px solid #6B5622;color:#EBD49A}
+.legal{color:var(--dim);font-size:.75rem;margin-top:1rem;line-height:1.5}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="bar">
+    <svg class="mark" viewBox="0 0 512 512" aria-hidden="true">
+      <rect width="512" height="512" rx="96" fill="#1E4FA8"/>
+      <g transform="translate(22,83) scale(0.72)"><path d="M347 158C347 108 165 108 165 180c0 56 182 56 182 120 0 72-182 72-182 20" fill="none" stroke="#fff" stroke-width="46" stroke-linecap="round"/></g>
+      <g fill="#F5B21B"><rect x="260" y="177" width="33" height="158"/><rect x="260" y="177" width="128" height="33"/><rect x="260" y="240" width="104" height="33"/><rect x="260" y="302" width="128" height="33"/></g>
+    </svg>
+    <div class="title">Floor Studio<small>Swayam Enterprises</small></div>
+    <div class="dots" aria-hidden="true"><i id="d1" class="on"></i><i id="d2"></i><i id="d3"></i><i id="d4"></i></div>
+  </header>
+
+  <main class="view" id="view">
+    <canvas id="stage" class="hide"></canvas>
+    <div class="empty" id="empty">
+      <button class="shutter" id="shoot" aria-label="Take a photo of your floor">
+        <svg viewBox="0 0 24 24"><path d="M3 8h3l2-3h8l2 3h3v11H3z"/><circle cx="12" cy="13" r="4"/></svg>
+      </button>
+      <h1>Photograph your floor</h1>
+      <p>Stand back so the whole floor is in frame. Daylight gives the best result.</p>
+      <button class="pick" id="pick">Choose a photo instead</button>
+    </div>
+    <div class="toast" id="toast"></div>
+    <div class="busy" id="busy"><div class="spin"></div></div>
+  </main>
+
+  <div class="dock">
+    <div class="swatches" id="swatches"></div>
+    <div class="tools">
+      <button class="tool" id="tRetake"><svg viewBox="0 0 24 24"><path d="M3 8h3l2-3h8l2 3h3v11H3z"/><circle cx="12" cy="13" r="4"/></svg><span>Retake</span></button>
+      <button class="tool" id="tUndo" disabled><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10H9"/></svg><span>Undo</span></button>
+      <button class="tool" id="tTune" disabled><svg viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/></svg><span>Adjust</span></button>
+      <button class="tool" id="tCompare" disabled><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/></svg><span>Before</span></button>
+      <button class="tool" id="tSave" disabled><svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M4 19h16"/></svg><span>Save</span></button>
+      <button class="tool primary" id="tSend" disabled><svg viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-2-6z"/></svg><span>Send</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+
+<!-- adjust sheet -->
+<div class="sheet" id="sheetTune">
+  <div class="grip"></div>
+  <h2>Adjust</h2>
+  <p class="sub">Fine-tune what was selected and how wet the finish looks.</p>
+  <div class="ctl">
+    <label>Spread <b id="tolV">13</b></label>
+    <input type="range" id="tol" min="4" max="30" value="13">
+    <p class="sub" style="margin:.4rem 0 0">Grabbing the walls? Lower it. Missing floor? Raise it, or tap those spots.</p>
+  </div>
+  <div class="ctl">
+    <label>Gloss <b id="glossV">45</b></label>
+    <input type="range" id="gloss" min="0" max="100" value="45">
+  </div>
+  <button class="ghost" id="clearSel">Clear selection and start again</button>
+</div>
+
+<!-- send sheet -->
+<div class="sheet" id="sheetSend">
+  <div class="grip"></div>
+  <h2>Send it to Swapnil</h2>
+  <p class="sub">He'll come back with the right system for that floor and a price band.</p>
+  <form id="form" novalidate>
+    <div class="fields">
+      <div class="row2">
+        <div class="fld"><label for="qname">Your name</label><input id="qname" name="name" type="text" autocomplete="name" maxlength="60"></div>
+        <div class="fld"><label for="qphone">Mobile</label><input id="qphone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="15"></div>
+      </div>
+      <div class="row2">
+        <div class="fld"><label for="qarea">Area (sq ft)</label><input id="qarea" name="area" type="number" inputmode="numeric" min="50" max="500000"></div>
+        <div class="fld"><label for="qspace">Type of space</label>
+          <select id="qspace" name="space">
+            <option>Home</option><option>Office</option><option>Factory or workshop</option>
+            <option>Warehouse or godown</option><option>Showroom or retail</option>
+            <option>Hospital or pharma</option><option>Food or dairy unit</option>
+            <option>Parking or basement</option><option>Garage</option><option>Something else</option>
+          </select>
+        </div>
+      </div>
+      <div class="fld"><label for="qloc">Site location</label><input id="qloc" name="location" type="text" maxlength="80" placeholder="Area, city"></div>
+      <div class="fld"><label for="qmsg">Anything else?</label><textarea id="qmsg" name="message" maxlength="600" placeholder="Cracks, oil stains, water pooling, when you need it done…"></textarea></div>
+    </div>
+    <div class="hp" aria-hidden="true"><label>Leave blank<input type="text" name="company_url" tabindex="-1" autocomplete="off"></label></div>
+    <button class="cta" id="sendBtn" type="submit">Send preview &amp; photo</button>
+    <a class="ghost" id="callBtn" href="tel:+911234567890" style="display:block;text-align:center;text-decoration:none">Or call instead</a>
+    <div class="note" id="note"></div>
+    <p class="legal"><a href="privacy.html" style="color:var(--gold)">Privacy policy</a> · This preview is indicative. Real colour, sheen and flake density depend on the light in your room and the sample you pick on site.</p>
+  </form>
+</div>
+
+<input type="file" id="file" accept="image/*" capture="environment" hidden>
+<input type="file" id="fileLib" accept="image/*" hidden>
+
+<script>
+const CONFIG = { brand:"Swayam Enterprises", person:"Swapnil Chavan",
+  phone:"+911234567890", whatsapp:"911234567890", email:"info@swayamenterprises.in", formKey:"" };
+const $ = id => document.getElementById(id);
+
+(async()=>{ try{
+  const r=await fetch('content.json?v='+Date.now(),{cache:'no-store'});
+  if(r.ok){ const c=await r.json(); if(c.business) Object.assign(CONFIG,{
+    phone:c.business.phone||CONFIG.phone, whatsapp:c.business.whatsapp||CONFIG.whatsapp,
+    email:c.business.email||CONFIG.email, person:c.business.person||CONFIG.person,
+    brand:c.business.name||CONFIG.brand }); }
+}catch(e){} $('callBtn').href='tel:'+CONFIG.phone; })();
+
+/* ============ finishes ============ */
+const rnd=(a,b)=>a+Math.random()*(b-a);
+function solid(c,w,h,base,sheen){
+  c.fillStyle=base; c.fillRect(0,0,w,h);
+  for(let i=0;i<7;i++){ const g=c.createRadialGradient(rnd(0,w),rnd(0,h),0,rnd(0,w),rnd(0,h),rnd(w*.25,w*.6));
+    g.addColorStop(0,'rgba(255,255,255,'+(sheen*.5)+')'); g.addColorStop(1,'rgba(255,255,255,0)');
+    c.fillStyle=g; c.fillRect(0,0,w,h); }
+}
+function metallic(c,w,h,c1,c2,c3){
+  c.fillStyle=c1; c.fillRect(0,0,w,h); c.filter='blur(34px)';
+  for(let i=0;i<26;i++){ c.fillStyle=[c2,c3,c1][i%3]; c.globalAlpha=rnd(.35,.85);
+    c.beginPath(); c.ellipse(rnd(0,w),rnd(0,h),rnd(w*.08,w*.34),rnd(h*.04,h*.18),rnd(0,Math.PI),0,Math.PI*2); c.fill(); }
+  c.filter='none'; c.globalAlpha=1; c.filter='blur(10px)';
+  for(let i=0;i<14;i++){ c.strokeStyle='rgba(255,255,255,'+rnd(.06,.2)+')'; c.lineWidth=rnd(6,26);
+    c.beginPath(); let x=rnd(0,w),y=rnd(0,h); c.moveTo(x,y);
+    for(let k=0;k<4;k++){ x+=rnd(-w*.3,w*.3); y+=rnd(-h*.2,h*.2); c.lineTo(x,y); } c.stroke(); }
+  c.filter='none';
+}
+function flake(c,w,h,base,cols){
+  c.fillStyle=base; c.fillRect(0,0,w,h);
+  for(let i=0;i<5200;i++){ c.save(); c.translate(rnd(0,w),rnd(0,h)); c.rotate(rnd(0,Math.PI));
+    c.fillStyle=cols[(Math.random()*cols.length)|0]; c.globalAlpha=rnd(.55,1);
+    c.fillRect(0,0,rnd(3,10),rnd(3,9)); c.restore(); }
+  c.globalAlpha=1;
+}
+function grit(c,w,h,base){
+  c.fillStyle=base; c.fillRect(0,0,w,h);
+  for(let i=0;i<26000;i++){ c.fillStyle=Math.random()>.5?'rgba(255,255,255,.14)':'rgba(0,0,0,.2)';
+    c.fillRect(rnd(0,w),rnd(0,h),2,2); }
+}
+function lined(c,w,h,base,line){ solid(c,w,h,base,.16); c.fillStyle=line;
+  c.fillRect(0,h*.3,w,h*.045); c.fillRect(0,h*.68,w,h*.045); }
+
+const FINISHES=[
+ {id:'sl-grey',name:'Light grey',sys:'Self-levelling epoxy',gloss:.55,draw:(c,w,h)=>solid(c,w,h,'#B6BABF',.32)},
+ {id:'sl-blue',name:'Signal blue',sys:'Self-levelling epoxy',gloss:.60,draw:(c,w,h)=>solid(c,w,h,'#1D4E96',.30)},
+ {id:'sl-green',name:'Ind. green',sys:'Self-levelling epoxy',gloss:.50,draw:(c,w,h)=>solid(c,w,h,'#2C6A50',.28)},
+ {id:'sl-red',name:'Oxide red',sys:'Self-levelling epoxy',gloss:.50,draw:(c,w,h)=>solid(c,w,h,'#8E3B2E',.28)},
+ {id:'mt-silver',name:'Graphite',sys:'Metallic epoxy',gloss:.80,draw:(c,w,h)=>metallic(c,w,h,'#6E747C','#3A3F47','#C3C8CE')},
+ {id:'mt-blue',name:'Ocean blue',sys:'Metallic epoxy',gloss:.85,draw:(c,w,h)=>metallic(c,w,h,'#1C4C86','#0A2649','#7FB6E6')},
+ {id:'mt-copper',name:'Copper',sys:'Metallic epoxy',gloss:.78,draw:(c,w,h)=>metallic(c,w,h,'#8A5A2B','#4A2E13','#D9A466')},
+ {id:'fl-grey',name:'Grey flake',sys:'Flake system',gloss:.42,draw:(c,w,h)=>flake(c,w,h,'#A9ADB2',['#3E4348','#EFEFEF','#7A8087','#1F2328'])},
+ {id:'fl-tan',name:'Sand flake',sys:'Flake system',gloss:.42,draw:(c,w,h)=>flake(c,w,h,'#C9B48F',['#6B573A','#F3EADB','#94795A','#3A2E1D'])},
+ {id:'as-char',name:'Anti-skid',sys:'Deck coating',gloss:.16,draw:(c,w,h)=>grit(c,w,h,'#41474E')},
+ {id:'ln-grey',name:'Line marked',sys:'Warehouse coating',gloss:.48,draw:(c,w,h)=>lined(c,w,h,'#9BA0A6','#F2C21B')},
+ {id:'pu-cream',name:'Cream PU',sys:'PU screed',gloss:.24,draw:(c,w,h)=>grit(c,w,h,'#CBC3AE')}
+];
+const TEX={};
+function texture(f){ if(TEX[f.id]) return TEX[f.id];
+  const c=document.createElement('canvas'); c.width=900; c.height=900;
+  f.draw(c.getContext('2d'),900,900); return TEX[f.id]=c; }
+
+let chosen=null;
+FINISHES.forEach(f=>{
+  const b=document.createElement('button'); b.className='sw'; b.type='button';
+  const cv=document.createElement('canvas'); cv.width=112; cv.height=112;
+  f.draw(cv.getContext('2d'),112,112);
+  const s=document.createElement('span'); s.textContent=f.name;
+  b.append(cv,s);
+  b.onclick=()=>{
+    document.querySelectorAll('.sw').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); chosen=f; $('gloss').value=Math.round(f.gloss*100); $('glossV').textContent=$('gloss').value;
+    if(!photo){ toast('Take a photo of your floor first.'); return; }
+    if(!seeds.length){ toast('Now tap your floor in the picture.'); }
+    dots(4); refresh();
+  };
+  $('swatches').append(b);
+});
+
+/* ============ state ============ */
+const stage=$('stage'), sctx=stage.getContext('2d');
+let photo=null, shade=null, pixels=null, mask=null, seeds=[], W=0, H=0, showAfter=true;
+
+function dots(n){ for(let i=1;i<=4;i++) $('d'+i).classList.toggle('on', i<=n); }
+let toastT;
+function toast(msg){
+  const t=$('toast'); t.innerHTML=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'), 3200);
+}
+const busy = on => $('busy').classList.toggle('show', on);
+function enable(on){ ['tUndo','tTune','tCompare','tSave','tSend'].forEach(id=>$(id).disabled=!on); }
+
+/* ============ photo ============ */
+$('shoot').onclick = ()=>$('file').click();
+$('pick').onclick  = ()=>$('fileLib').click();
+$('tRetake').onclick = ()=>$('file').click();
+$('file').onchange   = ()=>{ load($('file').files[0]); $('file').value=''; };
+$('fileLib').onchange= ()=>{ load($('fileLib').files[0]); $('fileLib').value=''; };
+
+function load(file){
+  if(!file || !file.type.startsWith('image/')) return;
+  busy(true);
+  const url=URL.createObjectURL(file), img=new Image();
+  img.onload=()=>{
+    URL.revokeObjectURL(url);
+    const max=1200, s=Math.min(1,max/Math.max(img.width,img.height));
+    const c=document.createElement('canvas');
+    c.width=W=Math.round(img.width*s); c.height=H=Math.round(img.height*s);
+    const x=c.getContext('2d',{willReadFrequently:true});
+    x.drawImage(img,0,0,W,H);
+    photo=c; stage.width=W; stage.height=H;
+    pixels=x.getImageData(0,0,W,H).data;
+    mask=new Uint8Array(W*H); seeds=[]; showAfter=true;
+    buildShade();
+    $('empty').classList.add('hide'); stage.classList.remove('hide');
+    enable(true); $('tUndo').disabled=true;
+    dots(2); refresh();
+    toast('Now <b>tap your floor</b> in the picture.');
+    busy(false);
+  };
+  img.onerror=()=>{ URL.revokeObjectURL(url); busy(false); toast("That photo couldn't be read."); };
+  img.src=url;
+}
+
+function buildShade(){
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const x=c.getContext('2d',{willReadFrequently:true}); x.drawImage(photo,0,0);
+  const im=x.getImageData(0,0,W,H), p=im.data;
+  let sum=0;
+  for(let i=0;i<p.length;i+=4) sum+=.2126*p[i]+.7152*p[i+1]+.0722*p[i+2];
+  const mean=sum/(p.length/4), k=1.25;
+  for(let i=0;i<p.length;i+=4){
+    const l=.2126*p[i]+.7152*p[i+1]+.0722*p[i+2];
+    let v=128+(l-mean)*k; v=v<0?0:v>255?255:v;
+    p[i]=p[i+1]=p[i+2]=v; p[i+3]=255;
+  }
+  x.putImageData(im,0,0); shade=c;
+}
+
+/* ============ floor selection ============ */
+function chroma(i){ const r=pixels[i],g=pixels[i+1],b=pixels[i+2],t=r+g+b+1;
+  return [r/t,g/t,.2126*r+.7152*g+.0722*b]; }
+function fillFrom(sx,sy,out){
+  const tolC=(+$('tol').value)/1000, tolL=40+(+$('tol').value)*4;
+  const [r0,g0,l0]=chroma((sy*W+sx)*4);
+  const seen=new Uint8Array(W*H), stack=[sx,sy];
+  const ok=(x,y)=>{ const k=y*W+x; if(seen[k]) return false;
+    const [r,g,l]=chroma(k*4);
+    return Math.abs(r-r0)<tolC && Math.abs(g-g0)<tolC && Math.abs(l-l0)<tolL; };
+  while(stack.length){
+    const y=stack.pop(), x=stack.pop();
+    let xl=x; while(xl>0 && ok(xl-1,y)) xl--;
+    let xr=x; while(xr<W-1 && ok(xr+1,y)) xr++;
+    for(let i=xl;i<=xr;i++){
+      const k=y*W+i; seen[k]=1; out[k]=1;
+      if(y>0   && !seen[(y-1)*W+i] && ok(i,y-1)) stack.push(i,y-1);
+      if(y<H-1 && !seen[(y+1)*W+i] && ok(i,y+1)) stack.push(i,y+1);
+    }
+  }
+}
+function rebuild(){ mask=new Uint8Array(W*H); for(const [x,y] of seeds) fillFrom(x,y,mask); }
+function coverage(){ let n=0; for(let i=0;i<mask.length;i++) if(mask[i]) n++; return n/mask.length; }
+
+stage.addEventListener('click', e=>{
+  if(!photo) return;
+  const r=stage.getBoundingClientRect();
+  const x=Math.round((e.clientX-r.left)/r.width*W), y=Math.round((e.clientY-r.top)/r.height*H);
+  if(x<0||y<0||x>=W||y>=H) return;
+  busy(true);
+  setTimeout(()=>{ seeds.push([x,y]); rebuild(); afterSelect(); busy(false); }, 10);
+});
+$('tUndo').onclick = ()=>{ seeds.pop(); rebuild(); afterSelect(); };
+$('clearSel').onclick = ()=>{ seeds=[]; mask=new Uint8Array(W*H); afterSelect(); closeSheets(); };
+let tolT;
+$('tol').oninput = ()=>{ $('tolV').textContent=$('tol').value;
+  clearTimeout(tolT); tolT=setTimeout(()=>{ rebuild(); afterSelect(); },130); };
+$('gloss').oninput = ()=>{ $('glossV').textContent=$('gloss').value; refresh(); };
+
+function afterSelect(){
+  $('tUndo').disabled = !seeds.length;
+  const c=coverage();
+  if(seeds.length){
+    if(c>0.72)      toast('That grabbed almost everything. Open <b>Adjust</b> and lower Spread.');
+    else if(c<0.04) toast('Barely anything selected. Raise <b>Spread</b> or tap a flatter spot.');
+    else if(!chosen) { dots(3); toast('Good. Now <b>pick a finish</b> below.'); }
+    else dots(4);
+  }
+  refresh();
+}
+
+/* ============ render ============ */
+function maskCanvas(){
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const x=c.getContext('2d'); const im=x.createImageData(W,H), p=im.data;
+  for(let i=0;i<mask.length;i++){ const j=i*4; p[j]=p[j+1]=p[j+2]=255; p[j+3]=mask[i]?255:0; }
+  x.putImageData(im,0,0);
+  const soft=document.createElement('canvas'); soft.width=W; soft.height=H;
+  const s=soft.getContext('2d'); s.filter='blur(2px)'; s.drawImage(c,0,0); s.filter='none';
+  return soft;
+}
+function quadFromMask(){
+  let top=H,bot=-1;
+  for(let y=0;y<H;y++) for(let x=0;x<W;x++) if(mask[y*W+x]){ if(y<top)top=y; if(y>bot)bot=y; break; }
+  if(bot<0) return null;
+  const ext=y=>{ let l=-1,r=-1; for(let x=0;x<W;x++) if(mask[y*W+x]){ if(l<0)l=x; r=x; } return l<0?null:[l,r]; };
+  const yT=Math.min(H-1, top+Math.round((bot-top)*.06)), yB=Math.max(0, bot-Math.round((bot-top)*.04));
+  const a=ext(yT)||[0,W-1], b=ext(yB)||[0,W-1], pad=(bot-top)*.05;
+  return [[a[0]-pad,yT-pad],[a[1]+pad,yT-pad],[b[1]+pad,yB+pad],[b[0]-pad,yB+pad]];
+}
+function homography(d){
+  const [[x0,y0],[x1,y1],[x2,y2],[x3,y3]]=d;
+  const dx1=x1-x2,dy1=y1-y2,dx2=x3-x2,dy2=y3-y2,sx=x0-x1+x2-x3,sy=y0-y1+y2-y3;
+  const den=dx1*dy2-dx2*dy1; if(!den||!isFinite(den)) return null;
+  const g=(sx*dy2-dx2*sy)/den,h=(dx1*sy-sx*dy1)/den;
+  const M={a:x1-x0+g*x1,b:x3-x0+h*x3,c:x0,d:y1-y0+g*y1,e:y3-y0+h*y3,f:y0,g,h};
+  return Object.values(M).every(isFinite)?M:null;
+}
+const proj=(M,u,v)=>{ const w=M.g*u+M.h*v+1; return [(M.a*u+M.b*v+M.c)/w,(M.d*u+M.e*v+M.f)/w]; };
+function expand(p,by){ const cx=(p[0][0]+p[1][0]+p[2][0])/3, cy=(p[0][1]+p[1][1]+p[2][1])/3;
+  return p.map(([x,y])=>{ const dx=x-cx,dy=y-cy,L=Math.hypot(dx,dy)||1; return [x+dx/L*by,y+dy/L*by]; }); }
+function tri(ctx,img,s,d){
+  const [[x0,y0],[x1,y1],[x2,y2]]=s, [[X0,Y0],[X1,Y1],[X2,Y2]]=expand(d,.7);
+  if(![X0,Y0,X1,Y1,X2,Y2].every(isFinite)) return;
+  const den=x0*(y2-y1)-x1*(y2-y0)+x2*(y1-y0); if(!den) return;
+  const a=(X0*(y2-y1)-X1*(y2-y0)+X2*(y1-y0))/den,b=(Y0*(y2-y1)-Y1*(y2-y0)+Y2*(y1-y0))/den,
+        c=(x0*(X2-X1)-x1*(X2-X0)+x2*(X1-X0))/den,d2=(x0*(Y2-Y1)-x1*(Y2-Y0)+x2*(Y1-Y0))/den,
+        e=(x0*(y1*X2-y2*X1)+y0*(x2*X1-x1*X2)+(x1*y2-x2*y1)*X0)/den,
+        f=(x0*(y1*Y2-y2*Y1)+y0*(x2*Y1-x1*Y2)+(x1*y2-x2*y1)*Y0)/den;
+  ctx.save(); ctx.beginPath(); ctx.moveTo(X0,Y0); ctx.lineTo(X1,Y1); ctx.lineTo(X2,Y2); ctx.closePath(); ctx.clip();
+  ctx.setTransform(a,b,c,d2,e,f); ctx.drawImage(img,0,0); ctx.restore();
+}
+function refresh(){
+  if(!photo) return;
+  sctx.setTransform(1,0,0,1,0,0); sctx.clearRect(0,0,W,H); sctx.drawImage(photo,0,0);
+  if(!seeds.length) return;
+  const mc=maskCanvas();
+  if(!showAfter || !chosen){
+    const t=document.createElement('canvas'); t.width=W; t.height=H;
+    const tc=t.getContext('2d'); tc.fillStyle='#F5B21B'; tc.fillRect(0,0,W,H);
+    tc.globalCompositeOperation='destination-in'; tc.drawImage(mc,0,0);
+    sctx.save(); sctx.globalAlpha=.45; sctx.globalCompositeOperation='multiply';
+    sctx.drawImage(t,0,0); sctx.restore();
+    return;
+  }
+  const quad=quadFromMask(); if(!quad) return;
+  const M=homography(quad); if(!M) return;
+  const tex=texture(chosen), N=24;
+  const warp=document.createElement('canvas'); warp.width=W; warp.height=H;
+  const wc=warp.getContext('2d'); const cw=tex.width/N, ch=tex.height/N;
+  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
+    const u0=i/N,u1=(i+1)/N,v0=j/N,v1=(j+1)/N;
+    const p00=proj(M,u0,v0),p10=proj(M,u1,v0),p11=proj(M,u1,v1),p01=proj(M,u0,v1);
+    const s00=[i*cw,j*ch],s10=[(i+1)*cw,j*ch],s11=[(i+1)*cw,(j+1)*ch],s01=[i*cw,(j+1)*ch];
+    tri(wc,tex,[s00,s10,s11],[p00,p10,p11]); tri(wc,tex,[s00,s11,s01],[p00,p11,p01]);
+  }
+  if(shade){ wc.globalCompositeOperation='overlay'; wc.globalAlpha=.82;
+    wc.drawImage(shade,0,0); wc.globalCompositeOperation='source-over'; wc.globalAlpha=1; }
+  const g=(+$('gloss').value)/100;
+  if(g>.02){
+    const lg=wc.createLinearGradient(0,H*.42,W*.75,H);
+    lg.addColorStop(0,'rgba(255,255,255,'+(.34*g)+')');
+    lg.addColorStop(.5,'rgba(255,255,255,'+(.12*g)+')');
+    lg.addColorStop(1,'rgba(255,255,255,0)');
+    wc.globalCompositeOperation='screen'; wc.fillStyle=lg; wc.fillRect(0,0,W,H);
+    wc.globalCompositeOperation='source-over';
+  }
+  wc.globalCompositeOperation='destination-in'; wc.drawImage(mc,0,0);
+  sctx.drawImage(warp,0,0);
+}
+
+/* ============ sheets ============ */
+function openSheet(el){ el.classList.add('open'); $('scrim').classList.add('open'); }
+function closeSheets(){ document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('open'));
+  $('scrim').classList.remove('open'); }
+$('scrim').onclick = closeSheets;
+$('tTune').onclick = ()=>openSheet($('sheetTune'));
+$('tSend').onclick = ()=>{
+  if(!chosen){ toast('Pick a finish first.'); return; }
+  openSheet($('sheetSend'));
+};
+$('tCompare').onclick = ()=>{
+  showAfter=!showAfter;
+  $('tCompare').classList.toggle('on', !showAfter);
+  $('tCompare').querySelector('span').textContent = showAfter ? 'Before' : 'After';
+  refresh();
+};
+
+/* ============ export ============ */
+function render(){
+  const out=document.createElement('canvas'); out.width=W; out.height=H+74;
+  const c=out.getContext('2d');
+  c.fillStyle='#0A0E14'; c.fillRect(0,0,out.width,out.height);
+  const was=showAfter; showAfter=true; refresh(); showAfter=was;
+  c.drawImage(stage,0,0);
+  c.fillStyle='#F5B21B'; c.fillRect(0,H,out.width,4);
+  c.fillStyle='#fff'; c.font='600 '+Math.round(W*.033)+'px Inter, sans-serif';
+  c.fillText(CONFIG.brand,18,H+34);
+  c.fillStyle='#8290A6'; c.font='400 '+Math.round(W*.026)+'px Inter, sans-serif';
+  c.fillText(chosen?chosen.name+' — '+chosen.sys:'Floor preview',18,H+62);
+  refresh(); return out;
+}
+const toBlob = cv => new Promise(r=>cv.toBlob(r,'image/jpeg',.85));
+$('tSave').onclick = async()=>{
+  if(!chosen){ toast('Pick a finish first.'); return; }
+  const b=await toBlob(render());
+  const a=document.createElement('a'); a.href=URL.createObjectURL(b);
+  a.download='floor-preview.jpg'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  toast('Saved to your downloads.');
+};
+
+/* ============ send ============ */
+function note(k,m){ const n=$('note'); n.className='note show '+k; n.textContent=m; }
+function clearNote(){ $('note').className='note'; }
+
+$('form').addEventListener('submit', async e=>{
+  e.preventDefault(); clearNote();
+  const f=e.target;
+  if(f.company_url.value) return;
+  const name=f.name.value.trim(), phone=f.phone.value.replace(/\D/g,'');
+  if(name.length<2){ note('err','Add your name so we know who to call back.'); f.name.focus(); return; }
+  if(phone.length<10){ note('err','Enter a 10-digit mobile number.'); f.phone.focus(); return; }
+  if(!photo||!chosen){ note('err','Add a photo and pick a finish first.'); return; }
+
+  const summary='Floor Studio enquiry\nName: '+name+'\nPhone: '+phone+
+    '\nFinish wanted: '+chosen.name+' ('+chosen.sys+')\nSpace: '+f.space.value+
+    '\nArea: '+(f.area.value||'not given')+' sq ft\nLocation: '+(f.location.value.trim()||'not given')+
+    '\nNotes: '+(f.message.value.trim()||'none');
+
+  const btn=$('sendBtn'); btn.disabled=true; btn.textContent='Sending…';
+  try{
+    const preview=await toBlob(render()), orig=await toBlob(photo);
+    const files=[new File([preview],'floor-preview.jpg',{type:'image/jpeg'}),
+                 new File([orig],'floor-original.jpg',{type:'image/jpeg'})];
+    if(navigator.canShare && navigator.canShare({files})){
+      await navigator.share({files,text:summary,title:'Floor enquiry — '+CONFIG.brand});
+      note('ok','Shared. Pick '+CONFIG.person+' in WhatsApp to finish sending.'); return;
+    }
+    if(CONFIG.formKey){
+      const fd=new FormData();
+      fd.append('access_key',CONFIG.formKey); fd.append('subject','Floor Studio — '+name);
+      fd.append('from_name',CONFIG.brand+' app'); fd.append('message',summary);
+      fd.append('preview',preview,'floor-preview.jpg'); fd.append('original',orig,'floor-original.jpg');
+      const j=await (await fetch('https://api.web3forms.com/submit',{method:'POST',body:fd})).json();
+      if(!j.success) throw new Error(j.message||'send failed');
+      note('ok','Sent. '+CONFIG.person+' will call you on '+phone+'.'); return;
+    }
+    window.open('https://wa.me/'+CONFIG.whatsapp+'?text='+encodeURIComponent(summary),'_blank','noopener');
+    note('info','WhatsApp is open with your details. Tap Save first, then attach the picture there.');
+  }catch(err){
+    if(err && err.name==='AbortError') clearNote();
+    else note('err',"That didn't go through. Call "+CONFIG.phone+" instead.");
+  }finally{ btn.disabled=false; btn.textContent='Send preview & photo'; }
+});
+
+if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+</body>
+</html>

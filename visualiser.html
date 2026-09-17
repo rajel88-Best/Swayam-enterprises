@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Floor visualiser — Swayam Enterprises</title>
+<meta name="description" content="Photograph your floor, tap it, pick a finish and see how it would look.">
+<meta name="theme-color" content="#0B2A66">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0B2A66;--navy-dp:#061A45;--gold:#F5B21B;--wash:#F4F6FA;--line:#DCE2EC;--ink:#101828;--grey:#5B6577;--r:8px}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--wash);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:16px;line-height:1.6}
+img,canvas{display:block;max-width:100%}
+h1,h2,h3{font-family:Archivo,sans-serif;font-weight:800;letter-spacing:-.02em;margin:0;line-height:1.08}
+a{color:inherit}
+.wrap{width:min(100% - 2rem,900px);margin-inline:auto}
+.top{background:var(--navy);color:#fff;border-bottom:3px solid var(--gold);padding-top:env(safe-area-inset-top)}
+.top .wrap{display:flex;align-items:center;gap:1rem;height:66px}
+.logo{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:#fff}
+.logo svg{width:34px;height:34px;border-radius:8px;flex:none}
+.logo b{font-family:Archivo;font-weight:800;font-size:1rem;letter-spacing:-.02em}
+.top .back{margin-left:auto;font-size:.88rem;color:#C4D3EE;text-decoration:none}
+.intro{padding:1.8rem 0 1.2rem}
+.intro h1{font-size:clamp(1.6rem,5vw,2.3rem);text-transform:uppercase}
+.rule{width:60px;height:5px;background:var(--gold);border-radius:3px;margin-bottom:1rem}
+.intro p{color:var(--grey);max-width:54ch;margin:.7rem 0 0}
+.stepper{display:flex;gap:.45rem;margin:1.4rem 0 1rem;flex-wrap:wrap}
+.stepper span{font-size:.76rem;font-weight:600;color:var(--grey);background:#fff;border:1px solid var(--line);padding:.3rem .7rem;border-radius:99px}
+.stepper span.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:1.3rem;margin-bottom:1rem}
+.card h2{font-size:1.02rem;margin-bottom:.2rem}
+.card .hint{color:var(--grey);font-size:.87rem;margin:0 0 1rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.75rem 1.25rem;border-radius:var(--r);border:1px solid transparent;font-family:Archivo;font-weight:700;font-size:.92rem;cursor:pointer;text-decoration:none}
+.btn--gold{background:var(--gold);color:var(--navy-dp)}.btn--gold:hover{background:#d8990c}
+.btn--navy{background:var(--navy);color:#fff}
+.btn--line{background:#fff;border-color:var(--line);color:var(--ink)}.btn--line:hover{border-color:var(--navy)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn--sm{padding:.5rem .9rem;font-size:.85rem}
+.drop{border:2px dashed var(--line);border-radius:10px;background:var(--wash);padding:2.2rem 1.2rem;text-align:center;cursor:pointer}
+.drop:hover,.drop.over{border-color:var(--gold);background:#FFFBF0}
+.drop h3{font-size:1.05rem;margin-bottom:.3rem}
+.drop p{color:var(--grey);font-size:.88rem;margin:0}
+.cam{width:50px;height:50px;margin:0 auto .85rem;border-radius:50%;background:var(--navy);display:grid;place-items:center}
+.cam svg{width:23px;height:23px;stroke:var(--gold);fill:none;stroke-width:1.7}
+.finishes{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.7rem}
+.fin{border:2px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;cursor:pointer;padding:0;text-align:left;font:inherit}
+.fin.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,178,27,.25)}
+.fin canvas{width:100%;aspect-ratio:4/3}
+.fin .t{padding:.5rem .6rem .65rem}
+.fin .t b{display:block;font-family:Archivo;font-weight:700;font-size:.82rem;line-height:1.2}
+.fin .t small{color:var(--grey);font-size:.72rem}
+.stagewrap{position:relative;background:#0B0F16;border-radius:10px;overflow:hidden;touch-action:manipulation}
+#stage{width:100%;display:block;cursor:crosshair}
+.tools{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:.9rem;align-items:center}
+.toggle{display:inline-flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.toggle button{border:0;background:#fff;padding:.55rem .95rem;font:inherit;font-weight:600;font-size:.88rem;cursor:pointer;color:var(--grey)}
+.toggle button.on{background:var(--navy);color:#fff}
+.slider{display:flex;align-items:center;gap:.6rem;font-size:.84rem;color:var(--grey);flex:1;min-width:180px}
+.slider input{flex:1;accent-color:var(--gold)}
+.tip{background:#FFF7E4;border:1px solid #F0D49A;color:#6B4E00;border-radius:8px;padding:.75rem .95rem;font-size:.85rem;margin-top:.9rem}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:.95rem}
+.f{display:flex;flex-direction:column;gap:.3rem}
+.f.full{grid-column:1/-1}
+.f label{font-size:.83rem;font-weight:600;color:var(--grey)}
+.f input,.f select,.f textarea{font:inherit;font-size:.94rem;padding:.68rem .8rem;border:1px solid var(--line);border-radius:var(--r);background:#fff;width:100%}
+.f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,178,27,.25)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.status{margin-top:.9rem;padding:.8rem 1rem;border-radius:var(--r);font-size:.9rem;display:none}
+.status.show{display:block}
+.status.ok{background:#EAF7EE;color:#1B5E31;border:1px solid #A9DCB9}
+.status.err{background:#FDECEA;color:#8A2318;border:1px solid #F0B4AC}
+.status.info{background:#FFF7E4;color:#6B4E00;border:1px solid #F0D49A}
+.install{position:fixed;left:0;right:0;bottom:0;background:var(--navy-dp);color:#fff;padding:.75rem 1rem;display:none;align-items:center;gap:.8rem;z-index:50;padding-bottom:calc(.75rem + env(safe-area-inset-bottom))}
+.install.show{display:flex}
+.install span{flex:1;font-size:.86rem;color:#C4D3EE}
+footer{background:var(--navy-dp);color:#8FA5CC;font-size:.84rem;padding:1.6rem 0;margin-top:2rem}
+.hide{display:none!important}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+@media(max-width:560px){.fields{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="wrap">
+  <a class="logo" href="index.html">
+    <svg viewBox="0 0 512 512" aria-hidden="true">
+      <rect width="512" height="512" rx="96" fill="#0B2A66"/>
+      <g transform="translate(22,83) scale(0.72)"><path d="M347 158C347 108 165 108 165 180c0 56 182 56 182 120 0 72-182 72-182 20" fill="none" stroke="#fff" stroke-width="46" stroke-linecap="round"/></g>
+      <g fill="#F5B21B"><rect x="260" y="177" width="33" height="158"/><rect x="260" y="177" width="128" height="33"/><rect x="260" y="240" width="104" height="33"/><rect x="260" y="302" width="128" height="33"/></g>
+    </svg>
+    <b>Swayam Enterprises</b>
+  </a>
+  <a class="back" href="index.html">← Site</a>
+</div></div>
+
+<div class="wrap">
+  <div class="intro">
+    <div class="rule"></div>
+    <h1>See it on your floor</h1>
+    <p>Photograph the room, tap your floor once, and pick a finish. No dragging corners — it works out the floor shape for you.</p>
+    <div class="stepper">
+      <span id="s1" class="on">1 · Photo</span>
+      <span id="s2">2 · Tap the floor</span>
+      <span id="s3">3 · Pick a finish</span>
+      <span id="s4">4 · Send it to us</span>
+    </div>
+  </div>
+
+  <!-- STEP 1 -->
+  <section class="card" id="cardUpload">
+    <h2>Photo of your floor</h2>
+    <p class="hint">Stand back, get the whole floor in frame. Daylight gives the best result.</p>
+    <input type="file" id="file" accept="image/*" capture="environment" hidden>
+    <div class="drop" id="drop" tabindex="0" role="button" aria-label="Take or choose a photo of your floor">
+      <div class="cam" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 8h3l2-3h8l2 3h3v11H3z"/><circle cx="12" cy="13" r="4"/></svg></div>
+      <h3>Take a photo of the room</h3>
+      <p>Or choose one already on your phone</p>
+    </div>
+  </section>
+
+  <!-- STEP 2 + 3 -->
+  <section class="card hide" id="cardStage">
+    <h2>Tap your floor</h2>
+    <p class="hint" id="stageHint">Tap anywhere on the floor. Tap more spots to add areas the first tap missed.</p>
+    <div class="stagewrap" id="stagewrap"><canvas id="stage"></canvas></div>
+    <div class="tools">
+      <label class="slider">Spread
+        <input type="range" id="tol" min="4" max="30" value="13" aria-label="How much of the floor to include">
+      </label>
+      <button class="btn btn--line btn--sm" id="undo" type="button">Undo tap</button>
+      <button class="btn btn--line btn--sm" id="clear" type="button">Start over</button>
+    </div>
+    <div class="tip" id="tip">Tap a plain part of the floor first. If it grabs the walls, drag <b>Spread</b> down. If it misses parts of the floor, drag it up or tap those parts too.</div>
+
+    <div class="tools" style="margin-top:1.1rem">
+      <div class="toggle">
+        <button id="tgAfter" class="on" type="button">After</button>
+        <button id="tgBefore" type="button">Before</button>
+      </div>
+      <label class="slider">Gloss<input type="range" id="gloss" min="0" max="100" value="45" aria-label="Gloss level"></label>
+      <button class="btn btn--line btn--sm" id="download" type="button">Save image</button>
+    </div>
+  </section>
+
+  <section class="card hide" id="cardFinish">
+    <h2>Choose a finish</h2>
+    <p class="hint">Indicative colours only. Exact shades are matched on site from a physical sample card.</p>
+    <div class="finishes" id="finishes"></div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="card hide" id="cardSend">
+    <h2>Send it to us</h2>
+    <p class="hint">We'll come back with the right system for that floor and a price band.</p>
+    <form id="form" novalidate>
+      <div class="fields">
+        <div class="f"><label for="qname">Your name</label><input id="qname" name="name" type="text" autocomplete="name" maxlength="60" required></div>
+        <div class="f"><label for="qphone">Mobile number</label><input id="qphone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="15" required></div>
+        <div class="f"><label for="qarea">Rough area (sq ft)</label><input id="qarea" name="area" type="number" min="50" max="500000" inputmode="numeric"></div>
+        <div class="f"><label for="qspace">Type of space</label>
+          <select id="qspace" name="space">
+            <option>Home</option><option>Office</option><option>Factory or workshop</option>
+            <option>Warehouse or godown</option><option>Showroom or retail</option>
+            <option>Hospital or pharma</option><option>Food or dairy unit</option>
+            <option>Parking or basement</option><option>Garage</option><option>Something else</option>
+          </select>
+        </div>
+        <div class="f full"><label for="qloc">Site location (area, city)</label><input id="qloc" name="location" type="text" maxlength="80"></div>
+        <div class="f full"><label for="qmsg">Anything else we should know?</label><textarea id="qmsg" name="message" maxlength="600" placeholder="Cracks, oil stains, water pooling, when you need it done…"></textarea></div>
+      </div>
+      <div class="hp" aria-hidden="true"><label>Leave blank<input type="text" name="company_url" tabindex="-1" autocomplete="off"></label></div>
+      <div class="tools" style="margin-top:1.2rem">
+        <button class="btn btn--gold" id="send" type="submit">Send preview &amp; photo</button>
+        <a class="btn btn--line" id="callBtn" href="tel:+911234567890">Or just call</a>
+      </div>
+      <div class="status" id="status" role="status"></div>
+    </form>
+  </section>
+</div>
+
+<footer><div class="wrap">© <span id="yr"></span> Swayam Enterprises · <a href="index.html" style="color:#C0CFE9">Back to the website</a></div></footer>
+
+<script>
+const CONFIG = { brand:"Swayam Enterprises", person:"Swapnil Chavan",
+  phone:"+911234567890", whatsapp:"911234567890", email:"info@swayamenterprises.in", formKey:"" };
+const $ = id => document.getElementById(id);
+$('yr').textContent = new Date().getFullYear();
+
+/* live business details from content.json */
+(async () => {
+  try{
+    const r = await fetch('content.json?v=' + Date.now(), {cache:'no-store'});
+    if(r.ok){ const c = await r.json();
+      if(c.business) Object.assign(CONFIG, {
+        phone:c.business.phone||CONFIG.phone, whatsapp:c.business.whatsapp||CONFIG.whatsapp,
+        email:c.business.email||CONFIG.email, person:c.business.person||CONFIG.person,
+        brand:c.business.name||CONFIG.brand });
+    }
+  }catch(e){}
+  $('callBtn').href = 'tel:' + CONFIG.phone;
+})();
+
+/* ================= FINISH TEXTURES — drawn in code, no image files ================= */
+const rnd = (a,b) => a + Math.random()*(b-a);
+function solid(ctx,w,h,base,sheen){
+  ctx.fillStyle=base; ctx.fillRect(0,0,w,h);
+  for(let i=0;i<7;i++){
+    const g=ctx.createRadialGradient(rnd(0,w),rnd(0,h),0,rnd(0,w),rnd(0,h),rnd(w*.25,w*.6));
+    g.addColorStop(0,'rgba(255,255,255,'+(sheen*.5)+')'); g.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+  }
+}
+function metallic(ctx,w,h,c1,c2,c3){
+  ctx.fillStyle=c1; ctx.fillRect(0,0,w,h);
+  ctx.filter='blur(34px)';
+  for(let i=0;i<26;i++){
+    ctx.fillStyle=[c2,c3,c1][i%3]; ctx.globalAlpha=rnd(.35,.85);
+    ctx.beginPath(); ctx.ellipse(rnd(0,w),rnd(0,h),rnd(w*.08,w*.34),rnd(h*.04,h*.18),rnd(0,Math.PI),0,Math.PI*2); ctx.fill();
+  }
+  ctx.filter='none'; ctx.globalAlpha=1; ctx.filter='blur(10px)';
+  for(let i=0;i<14;i++){
+    ctx.strokeStyle='rgba(255,255,255,'+rnd(.06,.20)+')'; ctx.lineWidth=rnd(6,26); ctx.beginPath();
+    let x=rnd(0,w),y=rnd(0,h); ctx.moveTo(x,y);
+    for(let k=0;k<4;k++){ x+=rnd(-w*.3,w*.3); y+=rnd(-h*.2,h*.2); ctx.lineTo(x,y); }
+    ctx.stroke();
+  }
+  ctx.filter='none';
+}
+function flake(ctx,w,h,base,cols){
+  ctx.fillStyle=base; ctx.fillRect(0,0,w,h);
+  for(let i=0;i<5200;i++){
+    ctx.save(); ctx.translate(rnd(0,w),rnd(0,h)); ctx.rotate(rnd(0,Math.PI));
+    ctx.fillStyle=cols[(Math.random()*cols.length)|0]; ctx.globalAlpha=rnd(.55,1);
+    ctx.fillRect(0,0,rnd(3,10),rnd(3,9)); ctx.restore();
+  }
+  ctx.globalAlpha=1;
+}
+function grit(ctx,w,h,base){
+  ctx.fillStyle=base; ctx.fillRect(0,0,w,h);
+  for(let i=0;i<26000;i++){
+    ctx.fillStyle=Math.random()>.5?'rgba(255,255,255,.14)':'rgba(0,0,0,.20)';
+    ctx.fillRect(rnd(0,w),rnd(0,h),2,2);
+  }
+}
+function lined(ctx,w,h,base,line){
+  solid(ctx,w,h,base,.16); ctx.fillStyle=line;
+  ctx.fillRect(0,h*.30,w,h*.045); ctx.fillRect(0,h*.68,w,h*.045);
+}
+const FINISHES = [
+  {id:'sl-grey',  name:'Light grey',        sys:'Self-levelling epoxy', gloss:.55, draw:(c,w,h)=>solid(c,w,h,'#B6BABF',.32)},
+  {id:'sl-blue',  name:'Signal blue',       sys:'Self-levelling epoxy', gloss:.60, draw:(c,w,h)=>solid(c,w,h,'#1D4E96',.30)},
+  {id:'sl-green', name:'Industrial green',  sys:'Self-levelling epoxy', gloss:.50, draw:(c,w,h)=>solid(c,w,h,'#2C6A50',.28)},
+  {id:'sl-red',   name:'Oxide red',         sys:'Self-levelling epoxy', gloss:.50, draw:(c,w,h)=>solid(c,w,h,'#8E3B2E',.28)},
+  {id:'mt-silver',name:'Graphite silver',   sys:'Metallic epoxy',       gloss:.80, draw:(c,w,h)=>metallic(c,w,h,'#6E747C','#3A3F47','#C3C8CE')},
+  {id:'mt-blue',  name:'Ocean blue',        sys:'Metallic epoxy',       gloss:.85, draw:(c,w,h)=>metallic(c,w,h,'#1C4C86','#0A2649','#7FB6E6')},
+  {id:'mt-copper',name:'Copper bronze',     sys:'Metallic epoxy',       gloss:.78, draw:(c,w,h)=>metallic(c,w,h,'#8A5A2B','#4A2E13','#D9A466')},
+  {id:'fl-grey',  name:'Grey flake',        sys:'Flake / chip system',  gloss:.42, draw:(c,w,h)=>flake(c,w,h,'#A9ADB2',['#3E4348','#EFEFEF','#7A8087','#1F2328'])},
+  {id:'fl-tan',   name:'Sand flake',        sys:'Flake / chip system',  gloss:.42, draw:(c,w,h)=>flake(c,w,h,'#C9B48F',['#6B573A','#F3EADB','#94795A','#3A2E1D'])},
+  {id:'as-char',  name:'Charcoal anti-skid',sys:'Anti-skid deck coating',gloss:.16,draw:(c,w,h)=>grit(c,w,h,'#41474E')},
+  {id:'ln-grey',  name:'Grey + line marking',sys:'Warehouse coating',   gloss:.48, draw:(c,w,h)=>lined(c,w,h,'#9BA0A6','#F2C21B')},
+  {id:'pu-cream', name:'Cream PU screed',   sys:'PU screed',            gloss:.24, draw:(c,w,h)=>grit(c,w,h,'#CBC3AE')}
+];
+const TEX = {};
+function texture(f){
+  if(TEX[f.id]) return TEX[f.id];
+  const c=document.createElement('canvas'); c.width=900; c.height=900;
+  f.draw(c.getContext('2d'),900,900);
+  return TEX[f.id]=c;
+}
+let chosen = null;
+FINISHES.forEach(f=>{
+  const b=document.createElement('button'); b.className='fin'; b.type='button';
+  const cv=document.createElement('canvas'); cv.width=200; cv.height=150;
+  f.draw(cv.getContext('2d'),200,150);
+  const t=document.createElement('div'); t.className='t';
+  const nb=document.createElement('b'); nb.textContent=f.name;
+  const sm=document.createElement('small'); sm.textContent=f.sys;
+  t.append(nb,sm); b.append(cv,t);
+  b.onclick=()=>{
+    document.querySelectorAll('.fin').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); chosen=f; $('gloss').value=Math.round(f.gloss*100);
+    step(4); $('cardSend').classList.remove('hide'); paint();
+    $('cardStage').scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  $('finishes').append(b);
+});
+
+/* ================= PHOTO ================= */
+const stage=$('stage'), sctx=stage.getContext('2d');
+let photo=null, shade=null, W=0, H=0;
+let pixels=null;              // Uint8ClampedArray of the photo
+let mask=null;                // Uint8Array, 1 = floor
+let seeds=[];                 // every tap the user made
+let showAfter=true;
+
+function step(n){ for(let i=1;i<=4;i++) $('s'+i).classList.toggle('on', i<=n); }
+
+$('drop').addEventListener('click',()=>$('file').click());
+$('drop').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();$('file').click();} });
+['dragenter','dragover'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.add('over')}));
+['dragleave','drop'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();$('drop').classList.remove('over')}));
+$('drop').addEventListener('drop',e=>load(e.dataTransfer.files[0]));
+$('file').addEventListener('change',()=>{ load($('file').files[0]); $('file').value=''; });
+
+function load(file){
+  if(!file || !file.type.startsWith('image/')) return;
+  const url=URL.createObjectURL(file), img=new Image();
+  img.onload=()=>{
+    URL.revokeObjectURL(url);
+    const max=1200, s=Math.min(1,max/Math.max(img.width,img.height));
+    const c=document.createElement('canvas');
+    c.width=W=Math.round(img.width*s); c.height=H=Math.round(img.height*s);
+    const x=c.getContext('2d',{willReadFrequently:true});
+    x.drawImage(img,0,0,W,H);
+    photo=c; stage.width=W; stage.height=H;
+    pixels=x.getImageData(0,0,W,H).data;
+    mask=new Uint8Array(W*H); seeds=[];
+    buildShade();
+    $('cardStage').classList.remove('hide');
+    $('cardFinish').classList.remove('hide');
+    step(2); paint();
+    $('cardStage').scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  img.onerror=()=>{ URL.revokeObjectURL(url); say("That file couldn't be read as a photo.",'err'); };
+  img.src=url;
+}
+
+/* Mid-grey shading map: average brightness becomes neutral, so only light and
+   shade carry through and the finish colour stays visible in a dark room. */
+function buildShade(){
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const x=c.getContext('2d',{willReadFrequently:true});
+  x.drawImage(photo,0,0);
+  const im=x.getImageData(0,0,W,H), p=im.data;
+  let sum=0;
+  for(let i=0;i<p.length;i+=4) sum += .2126*p[i] + .7152*p[i+1] + .0722*p[i+2];
+  const mean=sum/(p.length/4), k=1.25;
+  for(let i=0;i<p.length;i+=4){
+    const l=.2126*p[i]+.7152*p[i+1]+.0722*p[i+2];
+    let v=128+(l-mean)*k; v=v<0?0:v>255?255:v;
+    p[i]=p[i+1]=p[i+2]=v; p[i+3]=255;
+  }
+  x.putImageData(im,0,0); shade=c;
+}
+
+/* ================= FLOOR SELECTION =================
+   Scanline flood fill in normalised colour. Comparing hue rather than raw RGB
+   means a floor that gets darker towards the back is still one region, while a
+   slipper or a chair leg sitting on it is not. */
+function chroma(i){
+  const r=pixels[i], g=pixels[i+1], b=pixels[i+2];
+  const t=r+g+b+1;
+  return [r/t, g/t, .2126*r + .7152*g + .0722*b];
+}
+function fillFrom(sx, sy, out){
+  const tolC=(+$('tol').value)/1000;        // 0.004 – 0.030
+  const tolL=40 + (+$('tol').value)*4;      // brightness allowance
+  const [r0,g0,l0]=chroma((sy*W+sx)*4);
+  const seen=new Uint8Array(W*H);
+  const stack=[sx,sy];
+  const okAt=(x,y)=>{
+    const k=y*W+x; if(seen[k]) return false;
+    const [r,g,l]=chroma(k*4);
+    return Math.abs(r-r0)<tolC && Math.abs(g-g0)<tolC && Math.abs(l-l0)<tolL;
+  };
+  while(stack.length){
+    const y=stack.pop(), x=stack.pop();
+    let xl=x; while(xl>0 && okAt(xl-1,y)) xl--;
+    let xr=x; while(xr<W-1 && okAt(xr+1,y)) xr++;
+    for(let i=xl;i<=xr;i++){
+      const k=y*W+i; seen[k]=1; out[k]=1;
+      if(y>0   && !seen[(y-1)*W+i] && okAt(i,y-1)) stack.push(i,y-1);
+      if(y<H-1 && !seen[(y+1)*W+i] && okAt(i,y+1)) stack.push(i,y+1);
+    }
+  }
+}
+function rebuildMask(){
+  mask=new Uint8Array(W*H);
+  for(const [x,y] of seeds) fillFrom(x,y,mask);
+}
+function coverage(){
+  let n=0; for(let i=0;i<mask.length;i++) if(mask[i]) n++;
+  return n/mask.length;
+}
+
+stage.addEventListener('click', e => {
+  if(!photo) return;
+  const r=stage.getBoundingClientRect();
+  const x=Math.round((e.clientX-r.left)/r.width*W);
+  const y=Math.round((e.clientY-r.top)/r.height*H);
+  if(x<0||y<0||x>=W||y>=H) return;
+  seeds.push([x,y]);
+  rebuildMask(); afterSelect();
+});
+$('undo').onclick = ()=>{ seeds.pop(); rebuildMask(); afterSelect(); };
+$('clear').onclick = ()=>{ seeds=[]; mask=new Uint8Array(W*H); afterSelect(); };
+let tolTimer;
+$('tol').oninput = ()=>{ clearTimeout(tolTimer); tolTimer=setTimeout(()=>{ rebuildMask(); afterSelect(); }, 120); };
+
+function afterSelect(){
+  const c = coverage();
+  const tip=$('tip');
+  if(!seeds.length){ tip.innerHTML='Tap a plain part of the floor first. If it grabs the walls, drag <b>Spread</b> down. If it misses parts of the floor, drag it up or tap those parts too.'; }
+  else if(c > 0.72){ tip.innerHTML='<b>That selected almost the whole photo.</b> Drag <b>Spread</b> down and tap the floor again.'; }
+  else if(c < 0.04){ tip.innerHTML='<b>Barely anything was selected.</b> Drag <b>Spread</b> up, or tap a flatter part of the floor.'; }
+  else { tip.innerHTML='Looks good. Tap more spots to include parts it missed, then pick a finish below.'; step(3); }
+  if(seeds.length) $('cardFinish').classList.remove('hide');
+  paint();
+}
+
+/* mask → canvas, softened at the edges so it does not look cut out */
+function maskCanvas(){
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const x=c.getContext('2d');
+  const im=x.createImageData(W,H), p=im.data;
+  for(let i=0;i<mask.length;i++){
+    const j=i*4;
+    p[j]=p[j+1]=p[j+2]=255;
+    p[j+3]=mask[i]?255:0;
+  }
+  x.putImageData(im,0,0);
+  const soft=document.createElement('canvas'); soft.width=W; soft.height=H;
+  const sx=soft.getContext('2d');
+  sx.filter='blur(2px)'; sx.drawImage(c,0,0); sx.filter='none';
+  return soft;
+}
+
+/* perspective quad inferred from the selected region itself */
+function quadFromMask(){
+  let top=H, bot=-1;
+  for(let y=0;y<H;y++){ for(let x=0;x<W;x++){ if(mask[y*W+x]){ if(y<top) top=y; if(y>bot) bot=y; break; } } }
+  if(bot<0) return null;
+  const rowExtent = y => {
+    let l=-1, r=-1;
+    for(let x=0;x<W;x++) if(mask[y*W+x]){ if(l<0) l=x; r=x; }
+    return l<0 ? null : [l,r];
+  };
+  const yTop=Math.min(H-1, top + Math.round((bot-top)*0.06));
+  const yBot=Math.max(0,   bot - Math.round((bot-top)*0.04));
+  const a=rowExtent(yTop) || [0,W-1], b=rowExtent(yBot) || [0,W-1];
+  const pad=(bot-top)*0.05;
+  return [[a[0]-pad,yTop-pad],[a[1]+pad,yTop-pad],[b[1]+pad,yBot+pad],[b[0]-pad,yBot+pad]];
+}
+
+/* ================= WARP ================= */
+function homography(d){
+  const [[x0,y0],[x1,y1],[x2,y2],[x3,y3]]=d;
+  const dx1=x1-x2, dy1=y1-y2, dx2=x3-x2, dy2=y3-y2, sx=x0-x1+x2-x3, sy=y0-y1+y2-y3;
+  const den=dx1*dy2-dx2*dy1;
+  if(!den||!isFinite(den)) return null;
+  const g=(sx*dy2-dx2*sy)/den, h=(dx1*sy-sx*dy1)/den;
+  const Hm={a:x1-x0+g*x1,b:x3-x0+h*x3,c:x0,d:y1-y0+g*y1,e:y3-y0+h*y3,f:y0,g,h};
+  return Object.values(Hm).every(isFinite)?Hm:null;
+}
+const proj=(Hm,u,v)=>{ const w=Hm.g*u+Hm.h*v+1; return [(Hm.a*u+Hm.b*v+Hm.c)/w,(Hm.d*u+Hm.e*v+Hm.f)/w]; };
+function expand(p,by){
+  const cx=(p[0][0]+p[1][0]+p[2][0])/3, cy=(p[0][1]+p[1][1]+p[2][1])/3;
+  return p.map(([x,y])=>{ const dx=x-cx,dy=y-cy,L=Math.hypot(dx,dy)||1; return [x+dx/L*by,y+dy/L*by]; });
+}
+function tri(ctx,img,s,d){
+  const [[x0,y0],[x1,y1],[x2,y2]]=s, [[X0,Y0],[X1,Y1],[X2,Y2]]=expand(d,0.7);
+  if(![X0,Y0,X1,Y1,X2,Y2].every(isFinite)) return;
+  const den=x0*(y2-y1)-x1*(y2-y0)+x2*(y1-y0); if(!den) return;
+  const a=(X0*(y2-y1)-X1*(y2-y0)+X2*(y1-y0))/den, b=(Y0*(y2-y1)-Y1*(y2-y0)+Y2*(y1-y0))/den,
+        c=(x0*(X2-X1)-x1*(X2-X0)+x2*(X1-X0))/den, d2=(x0*(Y2-Y1)-x1*(Y2-Y0)+x2*(Y1-Y0))/den,
+        e=(x0*(y1*X2-y2*X1)+y0*(x2*X1-x1*X2)+(x1*y2-x2*y1)*X0)/den,
+        f=(x0*(y1*Y2-y2*Y1)+y0*(x2*Y1-x1*Y2)+(x1*y2-x2*y1)*Y0)/den;
+  ctx.save(); ctx.beginPath(); ctx.moveTo(X0,Y0); ctx.lineTo(X1,Y1); ctx.lineTo(X2,Y2); ctx.closePath(); ctx.clip();
+  ctx.setTransform(a,b,c,d2,e,f); ctx.drawImage(img,0,0); ctx.restore();
+}
+
+function paint(){
+  if(!photo) return;
+  sctx.setTransform(1,0,0,1,0,0);
+  sctx.clearRect(0,0,W,H);
+  sctx.drawImage(photo,0,0);
+  if(!seeds.length) return;
+
+  const mc = maskCanvas();
+
+  if(!showAfter || !chosen){
+    // show what is selected, so the tap is never a guess
+    sctx.save(); sctx.globalAlpha=.45; sctx.globalCompositeOperation='multiply';
+    sctx.fillStyle='#F5B21B';
+    const t=document.createElement('canvas'); t.width=W; t.height=H;
+    const tc=t.getContext('2d'); tc.fillStyle='#F5B21B'; tc.fillRect(0,0,W,H);
+    tc.globalCompositeOperation='destination-in'; tc.drawImage(mc,0,0);
+    sctx.drawImage(t,0,0); sctx.restore();
+    return;
+  }
+
+  const quad = quadFromMask(); if(!quad) return;
+  const Hm = homography(quad); if(!Hm) return;
+
+  const tex=texture(chosen), N=24;
+  const warp=document.createElement('canvas'); warp.width=W; warp.height=H;
+  const wc=warp.getContext('2d');
+  const cw=tex.width/N, ch=tex.height/N;
+  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
+    const u0=i/N,u1=(i+1)/N,v0=j/N,v1=(j+1)/N;
+    const p00=proj(Hm,u0,v0),p10=proj(Hm,u1,v0),p11=proj(Hm,u1,v1),p01=proj(Hm,u0,v1);
+    const s00=[i*cw,j*ch],s10=[(i+1)*cw,j*ch],s11=[(i+1)*cw,(j+1)*ch],s01=[i*cw,(j+1)*ch];
+    tri(wc,tex,[s00,s10,s11],[p00,p10,p11]);
+    tri(wc,tex,[s00,s11,s01],[p00,p11,p01]);
+  }
+  if(shade){
+    wc.globalCompositeOperation='overlay'; wc.globalAlpha=.82;
+    wc.drawImage(shade,0,0);
+    wc.globalCompositeOperation='source-over'; wc.globalAlpha=1;
+  }
+  const g=(+$('gloss').value)/100;
+  if(g>.02){
+    const lg=wc.createLinearGradient(0,H*.42,W*.75,H);
+    lg.addColorStop(0,'rgba(255,255,255,'+(0.34*g)+')');
+    lg.addColorStop(.5,'rgba(255,255,255,'+(0.12*g)+')');
+    lg.addColorStop(1,'rgba(255,255,255,0)');
+    wc.globalCompositeOperation='screen'; wc.fillStyle=lg; wc.fillRect(0,0,W,H);
+    wc.globalCompositeOperation='source-over';
+  }
+  wc.globalCompositeOperation='destination-in';   // keep only the floor
+  wc.drawImage(mc,0,0);
+  sctx.drawImage(warp,0,0);
+}
+
+$('gloss').oninput=paint;
+$('tgAfter').onclick=()=>{ showAfter=true; $('tgAfter').classList.add('on'); $('tgBefore').classList.remove('on'); paint(); };
+$('tgBefore').onclick=()=>{ showAfter=false; $('tgBefore').classList.add('on'); $('tgAfter').classList.remove('on'); paint(); };
+
+/* ================= EXPORT ================= */
+function render(){
+  const out=document.createElement('canvas');
+  out.width=W; out.height=H+74;
+  const c=out.getContext('2d');
+  c.fillStyle='#0B2A66'; c.fillRect(0,0,out.width,out.height);
+  const was=showAfter; showAfter=true; paint(); showAfter=was;
+  c.drawImage(stage,0,0);
+  c.fillStyle='#F5B21B'; c.fillRect(0,H,out.width,4);
+  c.fillStyle='#FFFFFF'; c.font='600 '+Math.round(W*.033)+'px Inter, sans-serif';
+  c.fillText(CONFIG.brand,18,H+34);
+  c.fillStyle='#BCCCE9'; c.font='400 '+Math.round(W*.026)+'px Inter, sans-serif';
+  c.fillText(chosen ? chosen.name+' — '+chosen.sys : 'Floor preview', 18, H+62);
+  paint();
+  return out;
+}
+const toBlob = cv => new Promise(r => cv.toBlob(r,'image/jpeg',.85));
+$('download').onclick=async()=>{
+  const blob=await toBlob(render());
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='floor-preview.jpg'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+};
+
+/* ================= SEND ================= */
+const statusEl=$('status');
+function say(m,k){ statusEl.textContent=m; statusEl.className='status show '+(k||'info'); }
+function clearSay(){ statusEl.className='status'; statusEl.textContent=''; }
+
+$('form').addEventListener('submit', async e=>{
+  e.preventDefault(); clearSay();
+  const f=e.target;
+  if(f.company_url.value) return;
+  const name=f.name.value.trim(), phone=f.phone.value.replace(/\D/g,'');
+  if(name.length<2){ say('Add your name so we know who to call back.','err'); f.name.focus(); return; }
+  if(phone.length<10){ say('Enter a 10-digit mobile number.','err'); f.phone.focus(); return; }
+  if(!photo || !chosen){ say('Add a photo and pick a finish first.','err'); return; }
+
+  const summary='Floor visualiser enquiry\nName: '+name+'\nPhone: '+phone+
+    '\nFinish wanted: '+chosen.name+' ('+chosen.sys+')'+
+    '\nSpace: '+f.space.value+'\nArea: '+(f.area.value||'not given')+' sq ft'+
+    '\nLocation: '+(f.location.value.trim()||'not given')+
+    '\nNotes: '+(f.message.value.trim()||'none');
+
+  const btn=$('send'); btn.disabled=true; btn.textContent='Sending…';
+  try{
+    const preview=await toBlob(render());
+    const orig=await toBlob(photo);
+    const files=[new File([preview],'floor-preview.jpg',{type:'image/jpeg'}),
+                 new File([orig],'floor-original.jpg',{type:'image/jpeg'})];
+    if(navigator.canShare && navigator.canShare({files})){
+      await navigator.share({files,text:summary,title:'Floor enquiry — '+CONFIG.brand});
+      say('Shared. Pick '+CONFIG.person+' in WhatsApp to finish sending.','ok'); return;
+    }
+    if(CONFIG.formKey){
+      const fd=new FormData();
+      fd.append('access_key',CONFIG.formKey);
+      fd.append('subject','Floor visualiser — '+name);
+      fd.append('from_name',CONFIG.brand+' website');
+      fd.append('message',summary);
+      fd.append('preview',preview,'floor-preview.jpg');
+      fd.append('original',orig,'floor-original.jpg');
+      const j=await (await fetch('https://api.web3forms.com/submit',{method:'POST',body:fd})).json();
+      if(!j.success) throw new Error(j.message||'send failed');
+      say('Sent. '+CONFIG.person+' will call you on '+phone+'.','ok'); return;
+    }
+    window.open('https://wa.me/'+CONFIG.whatsapp+'?text='+encodeURIComponent(summary),'_blank','noopener');
+    say('WhatsApp is open with your details. Save the preview with the Save image button and attach it there.','info');
+  }catch(err){
+    if(err && err.name==='AbortError') clearSay();
+    else say("That didn't go through. Call "+CONFIG.phone+" or message us on WhatsApp instead.",'err');
+  }finally{ btn.disabled=false; btn.textContent='Send preview & photo'; }
+});
+
+</script>
+</body>
+</html>
