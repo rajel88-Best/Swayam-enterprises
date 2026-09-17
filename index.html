@@ -72,6 +72,8 @@ nav a:hover{color:var(--navy)}
 .btn--gold{background:var(--gold);color:var(--navy-dp)}
 .btn--gold:hover{background:var(--gold-dp)}
 .btn--ghost{border-color:var(--line);color:var(--navy);background:#fff}
+.btn--ghost-light{background:transparent;border-color:rgba(255,255,255,.4);color:#fff}
+.btn--ghost-light:hover{background:#fff;color:var(--navy)}
 .btn--ghost:hover{border-color:var(--navy)}
 .btn--lg{padding:1.02rem 1.85rem;font-size:1.02rem}
 .navtoggle{display:none;margin-left:auto;background:none;border:1px solid var(--line);border-radius:var(--r);padding:.55rem .8rem;font:inherit;font-size:.9rem;cursor:pointer}
@@ -284,8 +286,7 @@ footer.site a{color:#C0CFE9;text-decoration:none}
     <div class="tagline" data-c="hero.tagline">Built to last. Designed to impress.</div>
     <p class="lede" data-c="hero.lede">High-performance epoxy, PU and self-levelling floors for homes, businesses and industries across Maharashtra. Most jobs are walkable in 24 hours.</p>
     <div class="hero-cta">
-      <a class="btn btn--gold btn--lg" href="visualiser.html">See it on your floor</a>
-      <a class="btn btn--ghost btn--lg" href="https://wa.me/911234567890" target="_blank" rel="noopener">WhatsApp us</a>
+      <a class="btn btn--gold btn--lg" href="https://wa.me/911234567890" target="_blank" rel="noopener">WhatsApp us</a>
     </div>
     <div class="pillars">
       <div class="pillar"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/></svg><b>Durable</b><small>Heavy traffic &amp; impact</small></div>
@@ -305,12 +306,12 @@ footer.site a{color:#C0CFE9;text-decoration:none}
       <p style="color:#B4C6E6;margin-top:.9rem;max-width:46ch">Photograph your room, tap your floor, and see it in any of our finishes in under a minute. Then send it straight to us for a quote.</p>
       <ul style="list-style:none;padding:0;margin:1.4rem 0 1.8rem;color:#D2DDF0;font-size:.96rem">
         <li style="padding:.3rem 0 .3rem 1.6rem;position:relative"><span style="position:absolute;left:0;color:var(--gold)">✓</span>Works on any phone, nothing to sign up for</li>
-        <li style="padding:.3rem 0 .3rem 1.6rem;position:relative"><span style="position:absolute;left:0;color:var(--gold)">✓</span>12 finishes — epoxy, metallic, flake, PU, anti-skid</li>
+        <li style="padding:.3rem 0 .3rem 1.6rem;position:relative"><span style="position:absolute;left:0;color:var(--gold)">✓</span>29 finishes — epoxy, metallic, flake, PU, anti-skid</li>
         <li style="padding:.3rem 0 .3rem 1.6rem;position:relative"><span style="position:absolute;left:0;color:var(--gold)">✓</span>Your photos stay on your phone until you send them</li>
       </ul>
       <div style="display:flex;flex-wrap:wrap;gap:.8rem">
         <a class="btn btn--gold btn--lg" href="app.html">Open Floor Studio</a>
-        <a class="btn btn--ghost btn--lg" style="border-color:rgba(255,255,255,.4);color:#fff" href="visualiser.html">Use it in the browser</a>
+        <a class="btn btn--ghost btn--ghost-light btn--lg" href="visualiser.html">Use it in the browser</a>
       </div>
       <p style="color:#8FA5CC;font-size:.85rem;margin-top:1rem">Add it to your home screen and it works like an app — Chrome menu → Add to Home screen.</p>
     </div>
@@ -515,7 +516,11 @@ footer.site a{color:#C0CFE9;text-decoration:none}
   </div>
 </section>
 
-<!-- ============ GALLERY ============ -->
+<!-- ============ GALLERY ============
+     Hidden until the job photos exist. To bring it back: delete this
+     comment opener and the closing marker at the end of the block,
+     then add images/work-1.jpg .. work-6.jpg.
+
 <section class="section" id="work">
   <div class="wrap">
     <div class="head"><div class="rule"></div><h2>Recent work</h2><p>Drop your job photos into the images folder to replace these.</p></div>
@@ -529,6 +534,7 @@ footer.site a{color:#C0CFE9;text-decoration:none}
     </div>
   </div>
 </section>
+END GALLERY -->
 
 <!-- ============ FAQ ============ -->
 <section class="section wash" id="faq">
@@ -570,7 +576,7 @@ footer.site a{color:#C0CFE9;text-decoration:none}
 <div class="strapline">Stronger floors &nbsp;★&nbsp; Better life &nbsp;★&nbsp; Built to last</div>
 
 <div class="callbar">
-  <a class="btn btn--ghost" style="background:transparent;border-color:rgba(255,255,255,.35);color:#fff" href="tel:+911234567890">Call</a>
+  <a class="btn btn--ghost btn--ghost-light" href="tel:+911234567890">Call</a>
   <a class="btn btn--gold" href="https://wa.me/911234567890" target="_blank" rel="noopener">WhatsApp</a>
 </div>
 
