@@ -1,9 +1,10 @@
 /* Offline shell. Bump CACHE when you change any file below,
    or phones will keep serving the old version. */
-const CACHE = 'swayam-v1';
+const CACHE = 'swayam-v2';
 const SHELL = [
   'app.html',
   'manifest.json',
+  'logo.svg',
   'icons/icon-192.png',
   'icons/icon-512.png'
 ];

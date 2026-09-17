@@ -7,7 +7,7 @@
 <meta name="description" content="Photograph your floor, tap it, pick a finish and see how it would look.">
 <meta name="theme-color" content="#0B2A66">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="icon" href="icons/icon-192.png">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -21,7 +21,7 @@ a{color:inherit}
 .top{background:var(--navy);color:#fff;border-bottom:3px solid var(--gold);padding-top:env(safe-area-inset-top)}
 .top .wrap{display:flex;align-items:center;gap:1rem;height:66px}
 .logo{display:flex;align-items:center;gap:.6rem;text-decoration:none;color:#fff}
-.logo svg{width:34px;height:34px;border-radius:8px;flex:none}
+.logo img{width:34px;height:34px;border-radius:8px;flex:none}
 .logo b{font-family:Archivo;font-weight:800;font-size:1rem;letter-spacing:-.02em}
 .top .back{margin-left:auto;font-size:.88rem;color:#C4D3EE;text-decoration:none}
 .intro{padding:1.8rem 0 1.2rem}
@@ -36,7 +36,6 @@ a{color:inherit}
 .card .hint{color:var(--grey);font-size:.87rem;margin:0 0 1rem}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.75rem 1.25rem;border-radius:var(--r);border:1px solid transparent;font-family:Archivo;font-weight:700;font-size:.92rem;cursor:pointer;text-decoration:none}
 .btn--gold{background:var(--gold);color:var(--navy-dp)}.btn--gold:hover{background:#d8990c}
-.btn--navy{background:var(--navy);color:#fff}
 .btn--line{background:#fff;border-color:var(--line);color:var(--ink)}.btn--line:hover{border-color:var(--navy)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .btn--sm{padding:.5rem .9rem;font-size:.85rem}
@@ -47,12 +46,14 @@ a{color:inherit}
 .cam{width:50px;height:50px;margin:0 auto .85rem;border-radius:50%;background:var(--navy);display:grid;place-items:center}
 .cam svg{width:23px;height:23px;stroke:var(--gold);fill:none;stroke-width:1.7}
 .finishes{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.7rem}
+.fingroup{font-size:.72rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--grey);margin:1.4rem 0 .6rem;display:flex;align-items:center;gap:.6rem}
+.fingroup:first-child{margin-top:.2rem}
+.fingroup::after{content:'';flex:1;height:1px;background:var(--line)}
 .fin{border:2px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;cursor:pointer;padding:0;text-align:left;font:inherit}
 .fin.on{border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,178,27,.25)}
 .fin canvas{width:100%;aspect-ratio:4/3}
 .fin .t{padding:.5rem .6rem .65rem}
-.fin .t b{display:block;font-family:Archivo;font-weight:700;font-size:.82rem;line-height:1.2}
-.fin .t small{color:var(--grey);font-size:.72rem}
+.fin .t b{display:block;font-family:Archivo;font-weight:700;font-size:.82rem;line-height:1.25}
 .stagewrap{position:relative;background:#0B0F16;border-radius:10px;overflow:hidden;touch-action:manipulation}
 #stage{width:100%;display:block;cursor:crosshair}
 .tools{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:.9rem;align-items:center}
@@ -74,9 +75,6 @@ a{color:inherit}
 .status.ok{background:#EAF7EE;color:#1B5E31;border:1px solid #A9DCB9}
 .status.err{background:#FDECEA;color:#8A2318;border:1px solid #F0B4AC}
 .status.info{background:#FFF7E4;color:#6B4E00;border:1px solid #F0D49A}
-.install{position:fixed;left:0;right:0;bottom:0;background:var(--navy-dp);color:#fff;padding:.75rem 1rem;display:none;align-items:center;gap:.8rem;z-index:50;padding-bottom:calc(.75rem + env(safe-area-inset-bottom))}
-.install.show{display:flex}
-.install span{flex:1;font-size:.86rem;color:#C4D3EE}
 footer{background:var(--navy-dp);color:#8FA5CC;font-size:.84rem;padding:1.6rem 0;margin-top:2rem}
 .hide{display:none!important}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
@@ -87,11 +85,7 @@ footer{background:var(--navy-dp);color:#8FA5CC;font-size:.84rem;padding:1.6rem 0
 
 <div class="top"><div class="wrap">
   <a class="logo" href="index.html">
-    <svg viewBox="0 0 512 512" aria-hidden="true">
-      <rect width="512" height="512" rx="96" fill="#0B2A66"/>
-      <g transform="translate(22,83) scale(0.72)"><path d="M347 158C347 108 165 108 165 180c0 56 182 56 182 120 0 72-182 72-182 20" fill="none" stroke="#fff" stroke-width="46" stroke-linecap="round"/></g>
-      <g fill="#F5B21B"><rect x="260" y="177" width="33" height="158"/><rect x="260" y="177" width="128" height="33"/><rect x="260" y="240" width="104" height="33"/><rect x="260" y="302" width="128" height="33"/></g>
-    </svg>
+    <img src="logo.svg" alt="" width="34" height="34">
     <b>Swayam Enterprises</b>
   </a>
   <a class="back" href="index.html">← Site</a>
@@ -142,6 +136,7 @@ footer{background:var(--navy-dp);color:#8FA5CC;font-size:.84rem;padding:1.6rem 0
         <button id="tgBefore" type="button">Before</button>
       </div>
       <label class="slider">Gloss<input type="range" id="gloss" min="0" max="100" value="45" aria-label="Gloss level"></label>
+      <label class="slider">Room light<input type="range" id="light" min="0" max="100" value="35" aria-label="How much of the room's light and shade to keep"></label>
       <button class="btn btn--line btn--sm" id="download" type="button">Save image</button>
     </div>
   </section>
@@ -149,7 +144,7 @@ footer{background:var(--navy-dp);color:#8FA5CC;font-size:.84rem;padding:1.6rem 0
   <section class="card hide" id="cardFinish">
     <h2>Choose a finish</h2>
     <p class="hint">Indicative colours only. Exact shades are matched on site from a physical sample card.</p>
-    <div class="finishes" id="finishes"></div>
+    <div id="finishes"></div>
   </section>
 
   <!-- STEP 4 -->
@@ -209,7 +204,8 @@ const rnd = (a,b) => a + Math.random()*(b-a);
 function solid(ctx,w,h,base,sheen){
   ctx.fillStyle=base; ctx.fillRect(0,0,w,h);
   for(let i=0;i<7;i++){
-    const g=ctx.createRadialGradient(rnd(0,w),rnd(0,h),0,rnd(0,w),rnd(0,h),rnd(w*.25,w*.6));
+    const gx=rnd(0,w), gy=rnd(0,h);   // one centre for both circles: an offset
+    const g=ctx.createRadialGradient(gx,gy,0,gx,gy,rnd(w*.25,w*.6));  // focus cones
     g.addColorStop(0,'rgba(255,255,255,'+(sheen*.5)+')'); g.addColorStop(1,'rgba(255,255,255,0)');
     ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
   }
@@ -251,19 +247,48 @@ function lined(ctx,w,h,base,line){
   ctx.fillRect(0,h*.30,w,h*.045); ctx.fillRect(0,h*.68,w,h*.045);
 }
 const FINISHES = [
-  {id:'sl-grey',  name:'Light grey',        sys:'Self-levelling epoxy', gloss:.55, draw:(c,w,h)=>solid(c,w,h,'#B6BABF',.32)},
-  {id:'sl-blue',  name:'Signal blue',       sys:'Self-levelling epoxy', gloss:.60, draw:(c,w,h)=>solid(c,w,h,'#1D4E96',.30)},
-  {id:'sl-green', name:'Industrial green',  sys:'Self-levelling epoxy', gloss:.50, draw:(c,w,h)=>solid(c,w,h,'#2C6A50',.28)},
-  {id:'sl-red',   name:'Oxide red',         sys:'Self-levelling epoxy', gloss:.50, draw:(c,w,h)=>solid(c,w,h,'#8E3B2E',.28)},
-  {id:'mt-silver',name:'Graphite silver',   sys:'Metallic epoxy',       gloss:.80, draw:(c,w,h)=>metallic(c,w,h,'#6E747C','#3A3F47','#C3C8CE')},
-  {id:'mt-blue',  name:'Ocean blue',        sys:'Metallic epoxy',       gloss:.85, draw:(c,w,h)=>metallic(c,w,h,'#1C4C86','#0A2649','#7FB6E6')},
-  {id:'mt-copper',name:'Copper bronze',     sys:'Metallic epoxy',       gloss:.78, draw:(c,w,h)=>metallic(c,w,h,'#8A5A2B','#4A2E13','#D9A466')},
-  {id:'fl-grey',  name:'Grey flake',        sys:'Flake / chip system',  gloss:.42, draw:(c,w,h)=>flake(c,w,h,'#A9ADB2',['#3E4348','#EFEFEF','#7A8087','#1F2328'])},
-  {id:'fl-tan',   name:'Sand flake',        sys:'Flake / chip system',  gloss:.42, draw:(c,w,h)=>flake(c,w,h,'#C9B48F',['#6B573A','#F3EADB','#94795A','#3A2E1D'])},
-  {id:'as-char',  name:'Charcoal anti-skid',sys:'Anti-skid deck coating',gloss:.16,draw:(c,w,h)=>grit(c,w,h,'#41474E')},
-  {id:'ln-grey',  name:'Grey + line marking',sys:'Warehouse coating',   gloss:.48, draw:(c,w,h)=>lined(c,w,h,'#9BA0A6','#F2C21B')},
-  {id:'pu-cream', name:'Cream PU screed',   sys:'PU screed',            gloss:.24, draw:(c,w,h)=>grit(c,w,h,'#CBC3AE')}
+  {id:'sl-pearl',base:'#E4E4E2',name:'Pearl white',sys:'Self-levelling epoxy',gloss:.58,draw:(c,w,h)=>solid(c,w,h,'#E4E4E2',.34)},
+  {id:'sl-grey',base:'#B6BABF',name:'Light grey',sys:'Self-levelling epoxy',gloss:.55,draw:(c,w,h)=>solid(c,w,h,'#B6BABF',.32)},
+  {id:'sl-dove',base:'#9AA0A7',name:'Dove grey',sys:'Self-levelling epoxy',gloss:.55,draw:(c,w,h)=>solid(c,w,h,'#9AA0A7',.30)},
+  {id:'sl-char',base:'#4A5058',name:'Charcoal grey',sys:'Self-levelling epoxy',gloss:.55,draw:(c,w,h)=>solid(c,w,h,'#4A5058',.26)},
+  {id:'sl-beige',base:'#C8B99C',name:'Sand beige',sys:'Self-levelling epoxy',gloss:.52,draw:(c,w,h)=>solid(c,w,h,'#C8B99C',.30)},
+  {id:'sl-blue',base:'#1D4E96',name:'Signal blue',sys:'Self-levelling epoxy',gloss:.60,draw:(c,w,h)=>solid(c,w,h,'#1D4E96',.30)},
+  {id:'sl-sky',base:'#4E86C6',name:'Sky blue',sys:'Self-levelling epoxy',gloss:.60,draw:(c,w,h)=>solid(c,w,h,'#4E86C6',.32)},
+  {id:'sl-green',base:'#2C6A50',name:'Industrial green',sys:'Self-levelling epoxy',gloss:.50,draw:(c,w,h)=>solid(c,w,h,'#2C6A50',.28)},
+  {id:'sl-red',base:'#8E3B2E',name:'Oxide red',sys:'Self-levelling epoxy',gloss:.50,draw:(c,w,h)=>solid(c,w,h,'#8E3B2E',.28)},
+  {id:'sl-yellow',base:'#E0A81C',name:'Traffic yellow',sys:'Self-levelling epoxy',gloss:.55,draw:(c,w,h)=>solid(c,w,h,'#E0A81C',.30)},
+  {id:'mt-silver',base:'#6E747C',name:'Graphite silver',sys:'Metallic epoxy',gloss:.80,draw:(c,w,h)=>metallic(c,w,h,'#6E747C','#3A3F47','#C3C8CE')},
+  {id:'mt-pearl',base:'#C9CDD2',name:'Pearl metallic',sys:'Metallic epoxy',gloss:.84,draw:(c,w,h)=>metallic(c,w,h,'#C9CDD2','#8E949C','#F2F4F6')},
+  {id:'mt-blue',base:'#1C4C86',name:'Ocean blue',sys:'Metallic epoxy',gloss:.85,draw:(c,w,h)=>metallic(c,w,h,'#1C4C86','#0A2649','#7FB6E6')},
+  {id:'mt-emerald',base:'#1F6B55',name:'Emerald green',sys:'Metallic epoxy',gloss:.82,draw:(c,w,h)=>metallic(c,w,h,'#1F6B55','#0A3226','#6FD0AE')},
+  {id:'mt-copper',base:'#8A5A2B',name:'Copper bronze',sys:'Metallic epoxy',gloss:.78,draw:(c,w,h)=>metallic(c,w,h,'#8A5A2B','#4A2E13','#D9A466')},
+  {id:'mt-black',base:'#2A2D33',name:'Volcanic black',sys:'Metallic epoxy',gloss:.86,draw:(c,w,h)=>metallic(c,w,h,'#2A2D33','#111316','#6E747C')},
+  {id:'fl-grey',base:'#A9ADB2',name:'Grey flake',sys:'Flake / chip system',gloss:.42,draw:(c,w,h)=>flake(c,w,h,'#A9ADB2',['#3E4348','#EFEFEF','#7A8087','#1F2328'])},
+  {id:'fl-tan',base:'#C9B48F',name:'Sand flake',sys:'Flake / chip system',gloss:.42,draw:(c,w,h)=>flake(c,w,h,'#C9B48F',['#6B573A','#F3EADB','#94795A','#3A2E1D'])},
+  {id:'fl-blue',base:'#8FA3BC',name:'Blue flake',sys:'Flake / chip system',gloss:.42,draw:(c,w,h)=>flake(c,w,h,'#8FA3BC',['#22354F','#EEF2F7','#5E7898','#12202F'])},
+  {id:'fl-terra',base:'#C39178',name:'Terracotta flake',sys:'Flake / chip system',gloss:.42,draw:(c,w,h)=>flake(c,w,h,'#C39178',['#7A3A22','#F5E4DA','#A4614A','#3D1B10'])},
+  {id:'as-char',base:'#41474E',name:'Charcoal anti-skid',sys:'Anti-skid deck coating',gloss:.16,draw:(c,w,h)=>grit(c,w,h,'#41474E')},
+  {id:'as-grey',base:'#7C838B',name:'Safety grey anti-skid',sys:'Anti-skid deck coating',gloss:.16,draw:(c,w,h)=>grit(c,w,h,'#7C838B')},
+  {id:'as-green',base:'#2F5F45',name:'Green anti-skid',sys:'Anti-skid deck coating',gloss:.16,draw:(c,w,h)=>grit(c,w,h,'#2F5F45')},
+  {id:'ln-grey',base:'#9BA0A6',name:'Grey, yellow lines',sys:'Warehouse coating',gloss:.48,draw:(c,w,h)=>lined(c,w,h,'#9BA0A6','#F2C21B')},
+  {id:'ln-white',base:'#8D939A',name:'Grey, white lines',sys:'Warehouse coating',gloss:.48,draw:(c,w,h)=>lined(c,w,h,'#8D939A','#F2F4F6')},
+  {id:'ln-blue',base:'#3C5B86',name:'Blue, yellow lines',sys:'Warehouse coating',gloss:.48,draw:(c,w,h)=>lined(c,w,h,'#3C5B86','#F2C21B')},
+  {id:'pu-cream',base:'#CBC3AE',name:'Cream PU screed',sys:'PU screed',gloss:.24,draw:(c,w,h)=>grit(c,w,h,'#CBC3AE')},
+  {id:'pu-red',base:'#9E4234',name:'Red PU screed',sys:'PU screed',gloss:.24,draw:(c,w,h)=>grit(c,w,h,'#9E4234')},
+  {id:'pu-green',base:'#3F6B52',name:'Green PU screed',sys:'PU screed',gloss:.24,draw:(c,w,h)=>grit(c,w,h,'#3F6B52')}
 ];
+const SYSTEMS = ['Self-levelling epoxy','Metallic epoxy','Flake / chip system','Anti-skid deck coating','Warehouse coating','PU screed'];
+function swatch(cv,f){
+  const x=cv.getContext('2d'), w=cv.width, h=cv.height;
+  x.fillStyle=f.base; x.fillRect(0,0,w,h);
+  f.draw(x,w,h);
+  const lg=x.createLinearGradient(0,h*.42,w*.75,h);
+  lg.addColorStop(0,'rgba(255,255,255,'+(.34*f.gloss)+')');
+  lg.addColorStop(.5,'rgba(255,255,255,'+(.12*f.gloss)+')');
+  lg.addColorStop(1,'rgba(255,255,255,0)');
+  x.globalCompositeOperation='screen'; x.fillStyle=lg; x.fillRect(0,0,w,h);
+  x.globalCompositeOperation='source-over';
+}
 const TEX = {};
 function texture(f){
   if(TEX[f.id]) return TEX[f.id];
@@ -272,21 +297,27 @@ function texture(f){
   return TEX[f.id]=c;
 }
 let chosen = null;
-FINISHES.forEach(f=>{
-  const b=document.createElement('button'); b.className='fin'; b.type='button';
-  const cv=document.createElement('canvas'); cv.width=200; cv.height=150;
-  f.draw(cv.getContext('2d'),200,150);
-  const t=document.createElement('div'); t.className='t';
-  const nb=document.createElement('b'); nb.textContent=f.name;
-  const sm=document.createElement('small'); sm.textContent=f.sys;
-  t.append(nb,sm); b.append(cv,t);
-  b.onclick=()=>{
-    document.querySelectorAll('.fin').forEach(x=>x.classList.remove('on'));
-    b.classList.add('on'); chosen=f; $('gloss').value=Math.round(f.gloss*100);
-    step(4); $('cardSend').classList.remove('hide'); paint();
-    $('cardStage').scrollIntoView({behavior:'smooth',block:'start'});
-  };
-  $('finishes').append(b);
+SYSTEMS.forEach(sys=>{
+  const set=FINISHES.filter(f=>f.sys===sys);
+  if(!set.length) return;
+  const hd=document.createElement('h3'); hd.className='fingroup'; hd.textContent=sys;
+  const grid=document.createElement('div'); grid.className='finishes';
+  set.forEach(f=>{
+    const b=document.createElement('button'); b.className='fin'; b.type='button';
+    const cv=document.createElement('canvas'); cv.width=200; cv.height=150;
+    swatch(cv,f);
+    const t=document.createElement('div'); t.className='t';
+    const nb=document.createElement('b'); nb.textContent=f.name;
+    t.append(nb); b.append(cv,t);
+    b.onclick=()=>{
+      document.querySelectorAll('.fin').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on'); chosen=f; $('gloss').value=Math.round(f.gloss*100);
+      step(4); $('cardSend').classList.remove('hide'); paint();
+      $('cardStage').scrollIntoView({behavior:'smooth',block:'start'});
+    };
+    grid.append(b);
+  });
+  $('finishes').append(hd,grid);
 });
 
 /* ================= PHOTO ================= */
@@ -329,22 +360,37 @@ function load(file){
   img.src=url;
 }
 
-/* Mid-grey shading map: average brightness becomes neutral, so only light and
-   shade carry through and the finish colour stays visible in a dark room. */
+/* Lighting map for the new floor.
+
+   The old version kept the photo's full detail and blended it back over the
+   finish, so every grout line, tile edge and stain in the original floor came
+   straight through and the coating looked see-through. This keeps only the
+   broad light and shade of the room: luminance is read at 1/24 scale, which
+   destroys surface detail outright, then softened and re-expanded. What
+   survives is where the room is bright and where it is dark - nothing that
+   describes the floor being replaced. */
 function buildShade(){
-  const c=document.createElement('canvas'); c.width=W; c.height=H;
-  const x=c.getContext('2d',{willReadFrequently:true});
-  x.drawImage(photo,0,0);
-  const im=x.getImageData(0,0,W,H), p=im.data;
+  const sw=Math.max(6,Math.round(W/24)), sh=Math.max(6,Math.round(H/24));
+  const s=document.createElement('canvas'); s.width=sw; s.height=sh;
+  const sx=s.getContext('2d',{willReadFrequently:true});
+  sx.drawImage(photo,0,0,sw,sh);
+  const im=sx.getImageData(0,0,sw,sh), p=im.data;
   let sum=0;
-  for(let i=0;i<p.length;i+=4) sum += .2126*p[i] + .7152*p[i+1] + .0722*p[i+2];
-  const mean=sum/(p.length/4), k=1.25;
+  for(let i=0;i<p.length;i+=4) sum+=.2126*p[i]+.7152*p[i+1]+.0722*p[i+2];
+  const mean=sum/(p.length/4), k=.62, lim=44;   // gentle, and hard-clamped
   for(let i=0;i<p.length;i+=4){
     const l=.2126*p[i]+.7152*p[i+1]+.0722*p[i+2];
-    let v=128+(l-mean)*k; v=v<0?0:v>255?255:v;
-    p[i]=p[i+1]=p[i+2]=v; p[i+3]=255;
+    let v=(l-mean)*k; v=v<-lim?-lim:v>lim?lim:v;
+    p[i]=p[i+1]=p[i+2]=128+v; p[i+3]=255;
   }
-  x.putImageData(im,0,0); shade=c;
+  sx.putImageData(im,0,0);
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const cx=c.getContext('2d');
+  const pad=Math.round(Math.min(W,H)*.06);      // overdraw, so the blur cannot
+  cx.filter='blur('+Math.max(6,Math.round(Math.min(W,H)/36))+'px)';
+  cx.drawImage(s,-pad,-pad,W+pad*2,H+pad*2);    // thin out the edges
+  cx.filter='none';
+  shade=c;
 }
 
 /* ================= FLOOR SELECTION =================
@@ -499,6 +545,8 @@ function paint(){
   const tex=texture(chosen), N=24;
   const warp=document.createElement('canvas'); warp.width=W; warp.height=H;
   const wc=warp.getContext('2d');
+  wc.fillStyle=chosen.base||'#9BA0A6';   // solid ground, so a seam between the
+  wc.fillRect(0,0,W,H);                  // warped tiles can never show the old floor
   const cw=tex.width/N, ch=tex.height/N;
   for(let i=0;i<N;i++) for(let j=0;j<N;j++){
     const u0=i/N,u1=(i+1)/N,v0=j/N,v1=(j+1)/N;
@@ -507,8 +555,9 @@ function paint(){
     tri(wc,tex,[s00,s10,s11],[p00,p10,p11]);
     tri(wc,tex,[s00,s11,s01],[p00,p11,p01]);
   }
-  if(shade){
-    wc.globalCompositeOperation='overlay'; wc.globalAlpha=.82;
+  const light=(+$('light').value)/100;
+  if(shade && light>.01){
+    wc.globalCompositeOperation='overlay'; wc.globalAlpha=light;
     wc.drawImage(shade,0,0);
     wc.globalCompositeOperation='source-over'; wc.globalAlpha=1;
   }
@@ -527,6 +576,7 @@ function paint(){
 }
 
 $('gloss').oninput=paint;
+$('light').oninput=paint;
 $('tgAfter').onclick=()=>{ showAfter=true; $('tgAfter').classList.add('on'); $('tgBefore').classList.remove('on'); paint(); };
 $('tgBefore').onclick=()=>{ showAfter=false; $('tgBefore').classList.add('on'); $('tgAfter').classList.remove('on'); paint(); };
 
